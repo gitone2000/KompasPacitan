@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOMPAS PACITAN - Data Analitik</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#2c5aa0",
+              secondary: "#4caf50",
+              accent: "#ff9800",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      .card-shadow {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Animation for mobile menu */
+      .sidebar-mobile {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+      }
+
+      .sidebar-mobile.open {
+        transform: translateX(0);
+      }
+
+      /* Overlay for mobile menu */
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+
+      .overlay.active {
+        display: block;
+      }
+
+      /* Active navigation item */
+      .nav-item.active {
+        background-color: rgba(44, 90, 160, 0.1);
+        border-left: 4px solid #2c5aa0;
+      }
+
+      .nav-item.active i,
+      .nav-item.active span {
+        color: #2c5aa0;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 font-sans text-gray-800">
+    <!-- Mobile Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <div class="flex flex-col h-screen">
+      <!-- Header -->
+      <header class="bg-white card-shadow z-10 py-3">
+        <div class="container mx-auto px-4">
+          <div class="flex items-center justify-between">
+            <!-- Left: Logo, Title, Subtitle -->
+            <div class="flex items-center">
+              <!-- Mobile menu button -->
+              <button
+                class="md:hidden text-gray-600 focus:outline-none mr-4"
+                id="mobileMenuButton"
+              >
+                <i class="fas fa-bars text-lg"></i>
+              </button>
+
+              <div class="flex items-center">
+                <div
+                  class="w-10 h-10 rounded-lg flex items-center justify-center mr-3"
+                >
+                  <img
+                    src="logo.PNG"
+                    alt="Logo Kompas Pacitan"
+                    class="w-9 h-9 rounded"
+                  />
+                </div>
+                <div>
+                  <h1 class="text-lg font-bold text-gray-800">
+                    KOMPAS PACITAN
+                  </h1>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: User Info -->
+            <div class="flex items-center">
+              <div class="text-right mr-3 hidden sm:block">
+                <div class="font-bold text-gray-800 text-sm">Admin User</div>
+                <small class="text-gray-500 text-xs">Administrator</small>
+              </div>
+              <div
+                class="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden"
+              >
+                <i class="fas fa-user text-gray-600 text-sm"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area with Sidebar -->
+      <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <div class="hidden md:flex md:flex-shrink-0">
+          <div class="w-56 bg-white flex flex-col card-shadow">
+            <!-- Navigation Menu -->
+            <div class="flex flex-col h-full">
+              <nav class="flex-1 px-3 py-4">
+                <ul class="space-y-1">
+                  <li>
+                    <a
+                      href="dashboard.html"
+                      class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                    >
+                      <i class="fas fa-home mr-3"></i>
+                      <span class="font-medium">Dashboard</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="data.html"
+                      class="nav-item active flex items-center px-3 py-2 text-gray-700 rounded-lg text-sm"
+                    >
+                      <i class="fas fa-database mr-3"></i>
+                      <span class="font-medium">Data</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                    >
+                      <i class="fas fa-user-circle mr-3"></i>
+                      <span class="font-medium">Profil</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                    >
+                      <i class="fas fa-cog mr-3"></i>
+                      <span class="font-medium">Setting</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+
+              <!-- Logout Button - Fixed to bottom -->
+              <div class="mt-auto p-3 border-t border-gray-200">
+                <a
+                  href="#"
+                  class="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm"
+                >
+                  <i class="fas fa-sign-out-alt mr-3"></i>
+                  <span class="font-medium">Logout</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Sidebar -->
+        <div
+          class="sidebar-mobile fixed inset-y-0 left-0 w-56 bg-white card-shadow md:hidden"
+          id="mobileSidebar"
+        >
+          <div class="flex flex-col h-full">
+            <!-- Navigation Menu -->
+            <nav class="flex-1 px-3 py-4">
+              <ul class="space-y-1">
+                <li>
+                  <a
+                    href="dashboard.html"
+                    class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                  >
+                    <i class="fas fa-home mr-3"></i>
+                    <span class="font-medium">Dashboard</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="data.html"
+                    class="nav-item active flex items-center px-3 py-2 text-gray-700 rounded-lg text-sm"
+                  >
+                    <i class="fas fa-database mr-3"></i>
+                    <span class="font-medium">Data</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                  >
+                    <i class="fas fa-user-circle mr-3"></i>
+                    <span class="font-medium">Profil</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                  >
+                    <i class="fas fa-cog mr-3"></i>
+                    <span class="font-medium">Setting</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+
+            <!-- Logout Button - Fixed to bottom -->
+            <div class="mt-auto p-3 border-t border-gray-200">
+              <a
+                href="#"
+                class="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm"
+              >
+                <i class="fas fa-sign-out-alt mr-3"></i>
+                <span class="font-medium">Logout</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <!-- Main Content Area -->
+          <main class="flex-1 overflow-y-auto p-4 md:p-6">
+            <!-- Dashboard Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-gray-500 text-sm font-medium mb-2">
+                  Jumlah Penduduk
+                </h3>
+                <p class="text-2xl font-bold text-gray-800">594.071 jiwa</p>
+              </div>
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-gray-500 text-sm font-medium mb-2">
+                  Luas Wilayah
+                </h3>
+                <p class="text-2xl font-bold text-gray-800">1.389,8 km²</p>
+              </div>
+              <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-gray-500 text-sm font-medium mb-2">
+                  Kunjungan Pengguna
+                </h3>
+                <p class="text-2xl font-bold text-gray-800">1.645</p>
+              </div>
+            </div>
+
+            <!-- Main Content Grid dengan Layout Baru -->
+            <div class="flex flex-col lg:flex-row gap-8 mb-8">
+              <!-- Kolom Kiri (Lebih Lebar) -->
+              <div class="w-full lg:w-2/3">
+                <div class="grid grid-cols-1 gap-8">
+                  <!-- Tren Populasi -->
+                  <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                      Tren Populasi (2019-2025)
+                    </h3>
+                    <div class="h-80">
+                      <canvas id="populationChart"></canvas>
+                    </div>
+                  </div>
+
+                  <!-- Mata Pencaharian Utama -->
+                  <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                      Mata Pencaharian Utama (2019-2023)
+                    </h3>
+                    <div class="h-80">
+                      <canvas id="occupationChart"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Kolom Kanan (Lebih Sempit) -->
+              <div class="w-full lg:w-1/3">
+                <div class="flex flex-col gap-8">
+                  <!-- Komoditas Unggulan -->
+                  <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                      Komoditas Unggulan
+                    </h3>
+                    <div class="h-80">
+                      <canvas id="commodityChart"></canvas>
+                    </div>
+                  </div>
+
+                  <!-- Data Desa Terpopuler -->
+                  <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                      Data Desa Terpopuler
+                    </h3>
+                    <div class="space-y-4">
+                      <div
+                        class="flex items-center justify-between p-3 bg-blue-50 rounded-lg"
+                      >
+                        <div>
+                          <p class="font-medium text-gray-800">Desa Sendang</p>
+                          <p class="text-sm text-gray-500">Pantai Klayar</p>
+                        </div>
+                        <span
+                          class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm"
+                          >1.800</span
+                        >
+                      </div>
+                      <div
+                        class="flex items-center justify-between p-3 bg-green-50 rounded-lg"
+                      >
+                        <div>
+                          <p class="font-medium text-gray-800">Desa Kembang</p>
+                          <p class="text-sm text-gray-500">Nelayan</p>
+                        </div>
+                        <span
+                          class="bg-green-500 text-white px-3 py-1 rounded-full text-sm"
+                          >1.600</span
+                        >
+                      </div>
+                      <div
+                        class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg"
+                      >
+                        <div>
+                          <p class="font-medium text-gray-800">Desa Miati</p>
+                          <p class="text-sm text-gray-500">Petani</p>
+                        </div>
+                        <span
+                          class="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm"
+                          >1.400</span
+                        >
+                      </div>
+                      <div
+                        class="flex items-center justify-between p-3 bg-purple-50 rounded-lg"
+                      >
+                        <div>
+                          <p class="font-medium text-gray-800">Desa Gawang</p>
+                          <p class="text-sm text-gray-500">Perkebunan Kakao</p>
+                        </div>
+                        <span
+                          class="bg-purple-500 text-white px-3 py-1 rounded-full text-sm"
+                          >1.200</span
+                        >
+                      </div>
+                      <!-- Tambahan desa untuk menunjukkan ruang vertikal -->
+                      <div
+                        class="flex items-center justify-between p-3 bg-red-50 rounded-lg"
+                      >
+                        <div>
+                          <p class="font-medium text-gray-800">
+                            Desa Sumberejo
+                          </p>
+                          <p class="text-sm text-gray-500">Pertanian Padi</p>
+                        </div>
+                        <span
+                          class="bg-red-500 text-white px-3 py-1 rounded-full text-sm"
+                          >1.000</span
+                        >
+                      </div>
+                      <div
+                        class="flex items-center justify-between p-3 bg-indigo-50 rounded-lg"
+                      >
+                        <div>
+                          <p class="font-medium text-gray-800">Desa Wonogoro</p>
+                          <p class="text-sm text-gray-500">Perkebunan Teh</p>
+                        </div>
+                        <span
+                          class="bg-indigo-500 text-white px-3 py-1 rounded-full text-sm"
+                          >900</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Mobile menu functionality
+      const mobileMenuButton = document.getElementById("mobileMenuButton");
+      const mobileSidebar = document.getElementById("mobileSidebar");
+      const overlay = document.getElementById("overlay");
+
+      function toggleMobileMenu() {
+        mobileSidebar.classList.toggle("open");
+        overlay.classList.toggle("active");
+      }
+
+      mobileMenuButton.addEventListener("click", toggleMobileMenu);
+      overlay.addEventListener("click", toggleMobileMenu);
+
+      // Close menu when clicking on a link
+      const mobileLinks = document.querySelectorAll("#mobileSidebar a");
+      mobileLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          mobileSidebar.classList.remove("open");
+          overlay.classList.remove("active");
+        });
+      });
+
+      // Data untuk diagram
+      const populationData = {
+        labels: ["2019", "2020", "2021", "2022", "2023", "2024", "2025"],
+        datasets: [
+          {
+            label: "Jumlah Penduduk",
+            data: [450000, 470000, 490000, 520000, 550000, 580000, 594071],
+            borderColor: "#3498db",
+            backgroundColor: "rgba(52, 152, 219, 0.1)",
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+          },
+        ],
+      };
+
+      // Data komoditas yang diperbarui
+      const commodityData = {
+        labels: ["Padi", "Jagung", "Ikan", "Cengkeh", "Kakao", "Kelapa"],
+        datasets: [
+          {
+            data: [30, 20, 18, 12, 10, 10],
+            backgroundColor: [
+              "#3498db", // Biru untuk Padi
+              "#2ecc71", // Hijau untuk Jagung
+              "#f39c12", // Oranye untuk Ikan
+              "#9b59b6", // Ungu untuk Cengkeh
+              "#e74c3c", // Merah untuk Kakao
+              "#1abc9c", // Hijau muda untuk Kelapa
+            ],
+            borderWidth: 1,
+            borderColor: "#ffffff",
+            hoverOffset: 15,
+          },
+        ],
+      };
+
+      const occupationData = {
+        labels: ["2019", "2020", "2021", "2022", "2023"],
+        datasets: [
+          {
+            label: "Pertanian",
+            data: [5000, 5200, 5300, 5400, 5500],
+            backgroundColor: "#3498db",
+          },
+          {
+            label: "Perkebunan",
+            data: [3500, 3700, 3800, 3900, 4000],
+            backgroundColor: "#2ecc71",
+          },
+          {
+            label: "Nelayan",
+            data: [2000, 2200, 2300, 2400, 2500],
+            backgroundColor: "#f39c12",
+          },
+          {
+            label: "Industri",
+            data: [1500, 1700, 1800, 1900, 2000],
+            backgroundColor: "#9b59b6",
+          },
+          {
+            label: "Pertambangan",
+            data: [800, 900, 1000, 1100, 1200],
+            backgroundColor: "#e74c3c",
+          },
+        ],
+      };
+
+      // Inisialisasi chart setelah halaman dimuat
+      document.addEventListener("DOMContentLoaded", function () {
+        // Tren Populasi Chart
+        const populationCtx = document
+          .getElementById("populationChart")
+          .getContext("2d");
+        new Chart(populationCtx, {
+          type: "line",
+          data: populationData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                mode: "index",
+                intersect: false,
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: false,
+                min: 400000,
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+
+        // Komoditas Unggulan Chart - DIUBAH MENJADI DONUT
+        const commodityCtx = document
+          .getElementById("commodityChart")
+          .getContext("2d");
+        new Chart(commodityCtx, {
+          type: "doughnut", // Mengubah dari 'pie' menjadi 'doughnut'
+          data: commodityData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "60%", // Membuat bagian tengah donat
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return `${context.label}: ${context.raw}%`;
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        // Mata Pencaharian Chart
+        const occupationCtx = document
+          .getElementById("occupationChart")
+          .getContext("2d");
+        new Chart(occupationCtx, {
+          type: "bar",
+          data: occupationData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+            },
+          },
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Peta Potensi - Kompas Pacitan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1a73e8",
+              secondary: "#34a853",
+              accent: "#fbbc05",
+              dark: "#1e293b",
+              light: "#f8fafc",
+            },
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        padding-top: 80px; /* Memberikan ruang untuk header fixed */
+      }
+
+      .gradient-bg {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      }
+
+      .gradient-bg-light {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(26, 115, 232, 0.3);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #34a853 0%, #0d8042 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(52, 168, 83, 0.3);
+      }
+
+      .btn-accent {
+        background: linear-gradient(135deg, #fbbc05 0%, #e6a000 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-accent:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(251, 188, 5, 0.3);
+      }
+
+      .nav-link {
+        position: relative;
+        padding-bottom: 5px;
+        font-size: 1.1rem;
+        padding: 0.5rem 1rem;
+      }
+
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #1a73e8;
+        transition: width 0.3s ease;
+      }
+
+      .nav-link:hover::after,
+      .nav-link.active::after {
+        width: 100%;
+      }
+
+      #interactive-map {
+        height: 600px; /* Diperpanjang dari 400px menjadi 600px */
+        width: 100%;
+        border-radius: 12px;
+        z-index: 1;
+      }
+
+      .map-container {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      .map-legend {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: white;
+        border-radius: 8px;
+        padding: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        z-index: 500;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+
+      .layer-toggle {
+        transition: all 0.3s ease;
+      }
+
+      .layer-toggle:hover {
+        background-color: #f1f5f9;
+      }
+
+      /* Detail Lokasi: Hilangkan animasi hover */
+      .location-card {
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .ai-badge {
+        background: rgba(26, 115, 232, 0.1);
+        color: #1a73e8;
+        border-radius: 50px;
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      /* Improved card design */
+      .card-hover {
+        transition: all 0.4s ease;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Loading animation */
+      .loading-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #1a73e8;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Feature icon styles */
+      .feature-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        box-shadow: 0 5px 10px rgba(26, 115, 232, 0.2);
+      }
+
+      .feature-icon i {
+        font-size: 1rem;
+      }
+
+      /* Improved header styles */
+      .header-modern {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        z-index: 9999;
+      }
+
+      /* Improved footer styles */
+      .footer-modern {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      }
+
+      /* Mobile-specific improvements */
+      @media (max-width: 768px) {
+        body {
+          padding-top: 70px;
+        }
+
+        #interactive-map {
+          height: 500px; /* Tetap lebih tinggi di mobile */
+        }
+
+        .page-header h1 {
+          font-size: 1.75rem;
+        }
+
+        .page-header p {
+          font-size: 0.9rem;
+        }
+
+        .map-legend {
+          bottom: 5px;
+          right: 5px;
+          padding: 6px;
+          z-index: 500;
+        }
+
+        .legend-item {
+          margin-bottom: 3px;
+        }
+
+        .legend-color {
+          width: 10px;
+          height: 10px;
+        }
+
+        .legend-item span {
+          font-size: 0.7rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        #interactive-map {
+          height: 400px; /* Tetap lebih tinggi di mobile kecil */
+        }
+
+        .page-header h1 {
+          font-size: 1.5rem;
+        }
+
+        .map-legend {
+          display: none;
+        }
+      }
+
+      /* NEW: Improved mobile header layout for map section */
+      .map-header-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      @media (min-width: 1024px) {
+        .map-header-mobile {
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+          gap: 0;
+        }
+      }
+
+      .filter-toggle-btn-mobile {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 6px rgba(26, 115, 232, 0.2);
+        transition: all 0.3s ease;
+        width: 100%;
+      }
+
+      @media (min-width: 1024px) {
+        .filter-toggle-btn-mobile {
+          width: auto;
+        }
+      }
+
+      .filter-toggle-btn-mobile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(26, 115, 232, 0.3);
+      }
+
+      .filter-toggle-btn-mobile i {
+        font-size: 1rem;
+      }
+
+      /* NEW: Floating arrow buttons for desktop */
+      .floating-arrow-btn {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        z-index: 999;
+        transition: all 0.3s ease;
+      }
+
+      .floating-arrow-btn:hover {
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .floating-arrow-btn-left {
+        left: 10px;
+      }
+
+      .floating-arrow-btn-right {
+        right: 10px;
+      }
+
+      /* NEW: Overlay sidebar styles */
+      .overlay-sidebar {
+        position: fixed;
+        top: 0;
+        height: 100vh;
+        background: white;
+        z-index: 998;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+      }
+
+      .overlay-sidebar-left {
+        left: 0;
+        width: 320px;
+        transform: translateX(-100%);
+      }
+
+      .overlay-sidebar-left.active {
+        transform: translateX(0);
+      }
+
+      .overlay-sidebar-right {
+        right: 0;
+        width: 320px;
+        transform: translateX(100%);
+      }
+
+      .overlay-sidebar-right.active {
+        transform: translateX(0);
+      }
+
+      .overlay-sidebar-content {
+        padding: 20px;
+        height: 100%;
+        overflow-y: auto;
+      }
+
+      /* NEW: Overlay background */
+      .sidebar-overlay-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 997;
+        display: none;
+      }
+
+      .sidebar-overlay-bg.active {
+        display: block;
+      }
+
+      /* NEW: Close button for desktop sidebars */
+      .sidebar-close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 10;
+      }
+
+      .sidebar-close-btn:hover {
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      /* NEW: Filter section styles */
+      .filter-section {
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Header & Navigation -->
+    <header class="header-modern">
+      <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center py-3">
+          <div class="flex items-center space-x-2">
+            <div class="rounded-xl flex items-center justify-center">
+              <img
+                src="assets/image/logo.PNG"
+                alt="Kompas Pacitan Logo"
+                class="w-10 h-10 rounded-lg"
+              />
+            </div>
+            <div>
+              <span class="text-xl font-bold text-gray-800"
+                >KOMPAS<span class="text-primary">PACITAN</span></span
+              >
+              <p class="text-xs text-gray-500 -mt-1">Platform Potensi Desa</p>
+            </div>
+          </div>
+
+          <!-- Desktop Menu -->
+          <nav class="hidden lg:flex space-x-4">
+            <a
+              href="index.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Beranda</a
+            >
+            <a
+              href="peta-potensi.html"
+              class="nav-link text-primary font-semibold text-sm active"
+              >Peta Potensi</a
+            >
+            <a
+              href="profil-desa.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Profil Desa</a
+            >
+            <a
+              href="peluang-investasi.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Peluang Investasi</a
+            >
+            <a
+              href="tentang.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Tentang</a
+            >
+          </nav>
+
+          <div class="flex items-center space-x-3">
+            <a
+              href="login.html"
+              class="hidden md:inline-block btn-primary text-white px-4 py-2 rounded-xl font-semibold shadow text-sm"
+              >Login / Daftar</a
+            >
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="lg:hidden text-gray-600">
+              <i class="fas fa-bars text-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div
+        id="mobile-menu"
+        class="hidden lg:hidden mobile-menu bg-white py-4 px-4 border-t shadow-lg"
+      >
+        <div class="flex flex-col space-y-4">
+          <a href="index.html" class="text-gray-600 text-base pl-3">Beranda</a>
+          <a
+            href="peta-potensi.html"
+            class="text-primary font-semibold text-base border-l-4 border-primary pl-3"
+            >Peta Potensi</a
+          >
+          <a href="profil-desa.html" class="text-gray-600 text-base pl-3"
+            >Profil Desa</a
+          >
+          <a href="peluang-investasi.html" class="text-gray-600 text-base pl-3"
+            >Peluang Investasi</a
+          >
+          <a href="tentang.html" class="text-gray-600 text-base pl-3"
+            >Tentang</a
+          >
+          <div class="pt-3 border-t">
+            <a
+              href="login.html"
+              class="block w-full btn-primary text-white text-center font-semibold py-2 rounded-xl text-sm"
+              >Login / Daftar</a
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- NEW: Floating Arrow Buttons for Desktop -->
+    <button
+      id="floating-filter-btn"
+      class="floating-arrow-btn floating-arrow-btn-left xl:flex hidden"
+    >
+      <i class="fas fa-chevron-right"></i>
+    </button>
+    <button
+      id="floating-detail-btn"
+      class="floating-arrow-btn floating-arrow-btn-right xl:flex hidden"
+    >
+      <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <!-- NEW: Overlay Sidebars for Desktop -->
+    <div id="overlay-sidebar-left" class="overlay-sidebar overlay-sidebar-left">
+      <div class="overlay-sidebar-content">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-dark">Layer & Filter</h2>
+          <button id="close-overlay-left" class="sidebar-close-btn">
+            <i class="fas fa-times text-base"></i>
+          </button>
+        </div>
+
+        <!-- Layer Data Potensi -->
+        <div class="filter-section">
+          <h3 class="font-semibold text-dark mb-3 text-sm">
+            Layer Data Potensi
+          </h3>
+          <div class="space-y-2">
+            <div
+              class="flex items-center layer-toggle p-2 rounded-lg cursor-pointer bg-white shadow-sm"
+            >
+              <input
+                type="checkbox"
+                id="overlay-layer-pariwisata"
+                class="mr-2 h-4 w-4 text-primary rounded"
+                checked
+              />
+              <label
+                for="overlay-layer-pariwisata"
+                class="flex items-center cursor-pointer text-sm"
+              >
+                <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                <span class="font-medium">Pariwisata</span>
+              </label>
+            </div>
+            <div
+              class="flex items-center layer-toggle p-2 rounded-lg cursor-pointer bg-white shadow-sm"
+            >
+              <input
+                type="checkbox"
+                id="overlay-layer-pertanian"
+                class="mr-2 h-4 w-4 text-primary rounded"
+                checked
+              />
+              <label
+                for="overlay-layer-pertanian"
+                class="flex items-center cursor-pointer text-sm"
+              >
+                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span class="font-medium">Pertanian</span>
+              </label>
+            </div>
+            <div
+              class="flex items-center layer-toggle p-2 rounded-lg cursor-pointer bg-white shadow-sm"
+            >
+              <input
+                type="checkbox"
+                id="overlay-layer-perikanan"
+                class="mr-2 h-4 w-4 text-primary rounded"
+                checked
+              />
+              <label
+                for="overlay-layer-perikanan"
+                class="flex items-center cursor-pointer text-sm"
+              >
+                <div class="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                <span class="font-medium">Perikanan</span>
+              </label>
+            </div>
+            <div
+              class="flex items-center layer-toggle p-2 rounded-lg cursor-pointer bg-white shadow-sm"
+            >
+              <input
+                type="checkbox"
+                id="overlay-layer-umkm"
+                class="mr-2 h-4 w-4 text-primary rounded"
+                checked
+              />
+              <label
+                for="overlay-layer-umkm"
+                class="flex items-center cursor-pointer text-sm"
+              >
+                <div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+                <span class="font-medium">UMKM</span>
+              </label>
+            </div>
+            <div
+              class="flex items-center layer-toggle p-2 rounded-lg cursor-pointer bg-white shadow-sm"
+            >
+              <input
+                type="checkbox"
+                id="overlay-layer-aset"
+                class="mr-2 h-4 w-4 text-primary rounded"
+              />
+              <label
+                for="overlay-layer-aset"
+                class="flex items-center cursor-pointer text-sm"
+              >
+                <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <span class="font-medium">Aset Desa</span>
+              </label>
+            </div>
+            <div
+              class="flex items-center layer-toggle p-2 rounded-lg cursor-pointer bg-white shadow-sm"
+            >
+              <input
+                type="checkbox"
+                id="overlay-layer-infrastruktur"
+                class="mr-2 h-4 w-4 text-primary rounded"
+              />
+              <label
+                for="overlay-layer-infrastruktur"
+                class="flex items-center cursor-pointer text-sm"
+              >
+                <div class="w-3 h-3 bg-teal-500 rounded-full mr-2"></div>
+                <span class="font-medium">Infrastruktur</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Tambahan -->
+        <div class="filter-section">
+          <h3 class="font-semibold text-dark mb-3 text-sm">Filter Tambahan</h3>
+          <div class="space-y-3">
+            <div>
+              <label
+                for="overlay-kecamatan-filter"
+                class="block text-xs font-medium text-gray-700 mb-1"
+                >Kecamatan</label
+              >
+              <select
+                id="overlay-kecamatan-filter"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent bg-white shadow-sm"
+              >
+                <option value="">Semua Kecamatan</option>
+              </select>
+            </div>
+            <div>
+              <label
+                for="overlay-desa-filter"
+                class="block text-xs font-medium text-gray-700 mb-1"
+                >Desa</label
+              >
+              <select
+                id="overlay-desa-filter"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent bg-white shadow-sm"
+              >
+                <option value="">Semua Desa</option>
+              </select>
+            </div>
+            <div>
+              <label
+                for="overlay-kategori-filter"
+                class="block text-xs font-medium text-gray-700 mb-1"
+                >Kategori Aset</label
+              >
+              <select
+                id="overlay-kategori-filter"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent bg-white shadow-sm"
+              >
+                <option value="">Semua Kategori</option>
+                <option value="lahan">Lahan Kosong</option>
+                <option value="gedung">Gedung</option>
+                <option value="bumdes">BUMDes</option>
+              </select>
+            </div>
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+              <div class="flex items-center mb-1">
+                <input
+                  type="checkbox"
+                  id="overlay-skoring-ai"
+                  class="mr-2 h-4 w-4 text-primary rounded"
+                />
+                <label
+                  for="overlay-skoring-ai"
+                  class="font-medium text-primary text-sm"
+                  >Skoring AI</label
+                >
+              </div>
+              <p class="text-xs text-blue-600">
+                Fitur ini memerlukan login untuk mengakses analisis AI lengkap
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tombol Reset Filter -->
+        <button
+          id="overlay-reset-filter"
+          class="w-full bg-gray-100 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-200 transition mt-3 text-sm"
+        >
+          <i class="fas fa-redo-alt mr-1"></i> Reset Filter
+        </button>
+      </div>
+    </div>
+
+    <div
+      id="overlay-sidebar-right"
+      class="overlay-sidebar overlay-sidebar-right"
+    >
+      <div class="overlay-sidebar-content">
+        <div class="flex items-center mb-4">
+          <h2 class="text-lg font-bold text-dark">Detail Lokasi</h2>
+          <button id="close-overlay-right" class="sidebar-close-btn">
+            <i class="fas fa-times text-base"></i>
+          </button>
+        </div>
+
+        <div id="overlay-location-detail" class="space-y-4">
+          <!-- Default state ketika belum ada lokasi dipilih -->
+          <div class="text-center py-8">
+            <i class="fas fa-map-marked-alt text-gray-300 text-4xl mb-3"></i>
+            <p class="text-gray-500 text-sm">
+              Pilih lokasi di peta untuk melihat detail
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW: Overlay Background -->
+    <div id="sidebar-overlay-bg" class="sidebar-overlay-bg"></div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+      <!-- Page Header -->
+      <div class="text-center mb-6 page-header">
+        <h1 class="text-2xl md:text-4xl font-bold text-dark mb-3">
+          Peta Potensi Interaktif
+        </h1>
+        <p class="text-sm md:text-base text-gray-600 max-w-3xl mx-auto">
+          Jelajahi berbagai potensi desa di Kabupaten Pacitan melalui peta
+          interaktif dengan data lengkap dan analisis AI
+        </p>
+      </div>
+
+      <!-- Peta Interaktif (Tengah) - Diperpanjang -->
+      <div class="w-full">
+        <!-- Header Peta -->
+        <div class="map-header-mobile mb-4">
+          <h2 class="text-lg md:text-xl font-bold text-dark mb-2 lg:mb-0">
+            Peta Interaktif Kabupaten Pacitan
+          </h2>
+        </div>
+
+        <div class="map-container">
+          <div id="interactive-map"></div>
+          <div class="map-legend">
+            <h4 class="font-bold mb-2 text-xs">Kategori Potensi</h4>
+            <div class="space-y-1">
+              <div class="legend-item">
+                <div class="legend-color bg-blue-500"></div>
+                <span class="text-xs font-medium">Pariwisata</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color bg-green-500"></div>
+                <span class="text-xs font-medium">Pertanian</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color bg-orange-500"></div>
+                <span class="text-xs font-medium">Perikanan</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color bg-purple-500"></div>
+                <span class="text-xs font-medium">UMKM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-modern text-white py-8 mt-10">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <div class="flex items-center space-x-2 mb-4">
+              <div
+                class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-map-marked-alt text-white text-lg"></i>
+              </div>
+              <div>
+                <span class="text-xl font-bold"
+                  >KOMPAS<span class="text-blue-400">PACITAN</span></span
+                >
+                <p class="text-xs text-gray-400 -mt-1">Platform Potensi Desa</p>
+              </div>
+            </div>
+            <p class="text-gray-400 mb-4 text-sm">
+              Platform digital untuk mengeksplorasi potensi desa dan peluang
+              investasi di Kabupaten Pacitan.
+            </p>
+            <div class="flex space-x-3">
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Menu Utama</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="index.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Beranda</a
+                >
+              </li>
+              <li>
+                <a
+                  href="peta-potensi.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Peta Potensi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="profil-desa.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Profil Desa</a
+                >
+              </li>
+              <li>
+                <a
+                  href="peluang-investasi.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Peluang Investasi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="tentang.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Tentang</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Tautan Cepat</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Tentang Kami</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Kebijakan Privasi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Syarat & Ketentuan</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Bantuan</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Kontak</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Kontak</h3>
+            <ul class="space-y-3 text-gray-400 text-sm">
+              <li class="flex items-start">
+                <i
+                  class="fas fa-map-marker-alt mt-0.5 mr-3 text-blue-400 text-xs"
+                ></i>
+                <span>Jl. Diponegoro No. 1, Pacitan, Jawa Timur</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-phone mr-3 text-blue-400 text-xs"></i>
+                <span>(0357) 123456</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-envelope mr-3 text-blue-400 text-xs"></i>
+                <span>info@kompaspacitan.go.id</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm"
+        >
+          <p>&copy; 2023 Kompas Pacitan. Hak Cipta Dilindungi.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+      // Data dummy untuk aplikasi
+      const appData = {
+        kecamatan: [
+          "Arjosari",
+          "Bandar",
+          "Donorojo",
+          "Kebonagung",
+          "Pringkuku",
+          "Punung",
+          "Sudimoro",
+          "Takeran",
+          "Tegalombo",
+          "Tulakan",
+          "Nawangan",
+        ],
+        desa: [
+          "Baleharjo",
+          "Ploso",
+          "Pucangsewu",
+          "Sidoharjo",
+          "Semanten",
+          "Bomo",
+          "Gondosari",
+          "Wareng",
+          "Belah",
+          "Cemeng",
+          "Donorojo",
+        ],
+        locations: [
+          {
+            id: 1,
+            coords: [-8.2068, 111.0799],
+            title: "Pantai Teleng Ria",
+            type: "Pariwisata",
+            kecamatan: "Pacitan",
+            desa: "Ploso",
+            description:
+              "Pantai dengan pasir putih dan ombak yang tenang, cocok untuk wisata keluarga. Memiliki fasilitas parkir, toilet, dan warung makan.",
+            image:
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            potential: "Tinggi",
+            access: "Jalan aspal, akses mudah",
+            distance: "3 km",
+            feasibility: 85,
+            idealSector: "Penginapan dan kuliner",
+            risksOpportunities:
+              "Risiko rendah, peluang tinggi untuk pengembangan fasilitas wisata",
+            kategori: "lahan",
+          },
+          {
+            id: 2,
+            coords: [-8.1896, 111.0924],
+            title: "Kebun Buah Naga",
+            type: "Pertanian",
+            kecamatan: "Kebonagung",
+            desa: "Baleharjo",
+            description:
+              "Perkebunan buah naga seluas 15 hektar dengan sistem agrowisata. Sudah memiliki jaringan pemasaran ke beberapa kota besar.",
+            image:
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            potential: "Sedang",
+            access: "Jalan makadam, akses cukup mudah",
+            distance: "5 km",
+            feasibility: 70,
+            idealSector: "Agrowisata dan pengolahan hasil pertanian",
+            risksOpportunities:
+              "Risiko sedang, peluang untuk pengembangan produk olahan",
+            kategori: "lahan",
+          },
+          {
+            id: 3,
+            coords: [-8.2234, 111.0678],
+            title: "Sentra Kerajinan Bambu",
+            type: "UMKM",
+            kecamatan: "Donorojo",
+            desa: "Pucangsewu",
+            description:
+              "Pusat produksi kerajinan anyaman bambu dengan 25 pengrajin aktif. Produk sudah dipasarkan hingga ke luar daerah.",
+            image:
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            potential: "Tinggi",
+            access: "Jalan aspal, akses mudah",
+            distance: "7 km",
+            feasibility: 80,
+            idealSector: "Ekspor dan e-commerce",
+            risksOpportunities: "Risiko rendah, peluang ekspor sangat tinggi",
+            kategori: "bumdes",
+          },
+          {
+            id: 4,
+            coords: [-8.2412, 111.1035],
+            title: "Tambak Udang Vaname",
+            type: "Perikanan",
+            kecamatan: "Bandar",
+            desa: "Sidoharjo",
+            description:
+              "Tambak udang vaname seluas 8 hektar dengan sistem budidaya intensif. Memiliki akses langsung ke laut.",
+            image:
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            potential: "Tinggi",
+            access: "Jalan tanah, akses agak sulit saat hujan",
+            distance: "12 km",
+            feasibility: 65,
+            idealSector: "Pengolahan hasil perikanan",
+            risksOpportunities: "Risiko penyakit udang, peluang ekspor tinggi",
+            kategori: "lahan",
+          },
+          {
+            id: 5,
+            coords: [-8.1956, 111.1257],
+            title: "Air Terjun Sumber Asri",
+            type: "Pariwisata",
+            kecamatan: "Punung",
+            desa: "Semanten",
+            description:
+              "Air terjun setinggi 25 meter dengan pemandangan hutan alami. Potensi besar untuk pengembangan wisata alam.",
+            image:
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            potential: "Sangat Tinggi",
+            access: "Jalan setapak, akses sedang",
+            distance: "8 km",
+            feasibility: 90,
+            idealSector: "Ekowisata dan fotografi",
+            risksOpportunities:
+              "Risiko rendah, peluang menjadi destinasi wisata unggulan",
+            kategori: "lahan",
+          },
+          {
+            id: 6,
+            coords: [-8.2156, 111.1457],
+            title: "Gedung Serba Guna BUMDes",
+            type: "UMKM",
+            kecamatan: "Tulakan",
+            desa: "Bomo",
+            description:
+              "Gedung serba guna milik BUMDes yang dapat digunakan untuk berbagai kegiatan usaha dan pertemuan.",
+            image:
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            potential: "Sedang",
+            access: "Jalan aspal, akses mudah",
+            distance: "4 km",
+            feasibility: 75,
+            idealSector: "Pusat kegiatan ekonomi dan pelatihan",
+            risksOpportunities: "Risiko rendah, peluang untuk penyewaan ruang",
+            kategori: "gedung",
+          },
+        ],
+      };
+
+      // Global variables
+      let map;
+      let markers = [];
+      let currentLocationDetails = null;
+
+      // Mobile menu toggle
+      document
+        .getElementById("mobile-menu-button")
+        .addEventListener("click", function () {
+          const mobileMenu = document.getElementById("mobile-menu");
+          mobileMenu.classList.toggle("hidden");
+        });
+
+      // NEW: Floating arrow button functions
+      function toggleOverlayLeftSidebar() {
+        const overlayLeft = document.getElementById("overlay-sidebar-left");
+        const overlayBg = document.getElementById("sidebar-overlay-bg");
+        const floatingBtn = document.getElementById("floating-filter-btn");
+
+        overlayLeft.classList.toggle("active");
+        overlayBg.classList.toggle("active");
+
+        // Update icon
+        const icon = floatingBtn.querySelector("i");
+        if (overlayLeft.classList.contains("active")) {
+          icon.classList.remove("fa-chevron-right");
+          icon.classList.add("fa-chevron-left");
+          floatingBtn.style.left = "330px";
+        } else {
+          icon.classList.remove("fa-chevron-left");
+          icon.classList.add("fa-chevron-right");
+          floatingBtn.style.left = "10px";
+        }
+      }
+
+      function toggleOverlayRightSidebar() {
+        const overlayRight = document.getElementById("overlay-sidebar-right");
+        const overlayBg = document.getElementById("sidebar-overlay-bg");
+        const floatingBtn = document.getElementById("floating-detail-btn");
+
+        overlayRight.classList.toggle("active");
+        overlayBg.classList.toggle("active");
+
+        // Update icon
+        const icon = floatingBtn.querySelector("i");
+        if (overlayRight.classList.contains("active")) {
+          icon.classList.remove("fa-chevron-left");
+          icon.classList.add("fa-chevron-right");
+          floatingBtn.style.right = "330px";
+        } else {
+          icon.classList.remove("fa-chevron-right");
+          icon.classList.add("fa-chevron-left");
+          floatingBtn.style.right = "10px";
+        }
+      }
+
+      // Close overlay when clicking on background
+      document
+        .getElementById("sidebar-overlay-bg")
+        .addEventListener("click", function () {
+          toggleOverlayLeftSidebar();
+          toggleOverlayRightSidebar();
+        });
+
+      // Initialize filter dropdowns
+      function initializeFilters() {
+        const overlayKecamatanFilter = document.getElementById(
+          "overlay-kecamatan-filter"
+        );
+        const overlayDesaFilter = document.getElementById(
+          "overlay-desa-filter"
+        );
+
+        // Populate kecamatan filter
+        appData.kecamatan.forEach((kecamatan) => {
+          const overlayOption = document.createElement("option");
+          overlayOption.value = kecamatan;
+          overlayOption.textContent = kecamatan;
+          overlayKecamatanFilter.appendChild(overlayOption);
+        });
+
+        // Populate desa filter
+        appData.desa.forEach((desa) => {
+          const overlayOption = document.createElement("option");
+          overlayOption.value = desa;
+          overlayOption.textContent = desa;
+          overlayDesaFilter.appendChild(overlayOption);
+        });
+
+        // Add event listeners for filters
+        document
+          .querySelectorAll('input[type="checkbox"]')
+          .forEach((checkbox) => {
+            checkbox.addEventListener("change", applyFilters);
+          });
+
+        overlayKecamatanFilter.addEventListener("change", applyFilters);
+        overlayDesaFilter.addEventListener("change", applyFilters);
+
+        document
+          .getElementById("overlay-kategori-filter")
+          .addEventListener("change", applyFilters);
+
+        // Reset filter button
+        document
+          .getElementById("overlay-reset-filter")
+          .addEventListener("click", resetFilters);
+
+        // NEW: Add event listeners for overlay buttons
+        document
+          .getElementById("floating-filter-btn")
+          .addEventListener("click", toggleOverlayLeftSidebar);
+
+        document
+          .getElementById("floating-detail-btn")
+          .addEventListener("click", toggleOverlayRightSidebar);
+
+        document
+          .getElementById("close-overlay-left")
+          .addEventListener("click", toggleOverlayLeftSidebar);
+
+        document
+          .getElementById("close-overlay-right")
+          .addEventListener("click", toggleOverlayRightSidebar);
+      }
+
+      // Apply filters to map markers
+      function applyFilters() {
+        const selectedLayers = Array.from(
+          document.querySelectorAll('input[type="checkbox"]:checked')
+        ).map((checkbox) => checkbox.id.replace("overlay-layer-", ""));
+
+        const selectedKecamatan = document.getElementById(
+          "overlay-kecamatan-filter"
+        ).value;
+        const selectedDesa = document.getElementById(
+          "overlay-desa-filter"
+        ).value;
+        const selectedKategori = document.getElementById(
+          "overlay-kategori-filter"
+        ).value;
+
+        markers.forEach((marker) => {
+          const location = marker.locationData;
+          let visible = true;
+
+          // Check layer filter
+          if (
+            selectedLayers.length > 0 &&
+            !selectedLayers.includes(location.type.toLowerCase())
+          ) {
+            visible = false;
+          }
+
+          // Check kecamatan filter
+          if (selectedKecamatan && location.kecamatan !== selectedKecamatan) {
+            visible = false;
+          }
+
+          // Check desa filter
+          if (selectedDesa && location.desa !== selectedDesa) {
+            visible = false;
+          }
+
+          // Check kategori filter
+          if (selectedKategori && location.kategori !== selectedKategori) {
+            visible = false;
+          }
+
+          // Show/hide marker
+          if (visible) {
+            map.addLayer(marker);
+          } else {
+            map.removeLayer(marker);
+          }
+        });
+      }
+
+      // Reset all filters
+      function resetFilters() {
+        document
+          .querySelectorAll('input[type="checkbox"]')
+          .forEach((checkbox) => {
+            if (checkbox.id !== "overlay-skoring-ai") {
+              checkbox.checked = true;
+            }
+          });
+
+        document.getElementById("overlay-kecamatan-filter").value = "";
+        document.getElementById("overlay-desa-filter").value = "";
+        document.getElementById("overlay-kategori-filter").value = "";
+
+        applyFilters();
+      }
+
+      // Initialize Interactive Map
+      function initInteractiveMap() {
+        // Koordinat Pacitan
+        const pacitanCoords = [-8.2068, 111.0799];
+
+        // Initialize map
+        map = L.map("interactive-map").setView(pacitanCoords, 12);
+
+        // Add tile layer (OpenStreetMap)
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
+
+        // Define custom pin icons for different types
+        const pinColors = {
+          Pariwisata: "blue",
+          Pertanian: "green",
+          UMKM: "purple",
+          Perikanan: "orange",
+        };
+
+        // Add pin markers to map
+        appData.locations.forEach((location) => {
+          // Create custom pin icon
+          const pinIcon = L.divIcon({
+            className: "custom-pin",
+            html: `<div style="background-color: ${
+              pinColors[location.type]
+            }; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg); color: white; font-size: 10px;">
+                               <i class="fas fa-map-pin"></i>
+                             </div>
+                           </div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 24],
+          });
+
+          const marker = L.marker(location.coords, { icon: pinIcon }).addTo(
+            map
+          );
+
+          // Store location data with marker
+          marker.locationData = location;
+
+          // Store marker for filtering
+          markers.push(marker);
+
+          marker.bindPopup(`
+                    <div class="p-2">
+                        <h3 class="font-bold text-sm">${location.title}</h3>
+                        <div class="flex items-center mb-1 mt-1">
+                            <div class="w-2 h-2 rounded-full mr-1" style="background-color: ${
+                              pinColors[location.type]
+                            }"></div>
+                            <span class="text-xs font-medium">${
+                              location.type
+                            }</span>
+                        </div>
+                        <p class="text-xs mt-1">${location.description.substring(
+                          0,
+                          80
+                        )}...</p>
+                    </div>
+                `);
+
+          // Add click event to show details in right panel
+          marker.on("click", function () {
+            showLocationDetails(location);
+            // Ensure right sidebar is visible when a location is selected
+            toggleOverlayRightSidebar();
+          });
+        });
+      }
+
+      // Function to show location details in right panel
+      function showLocationDetails(location) {
+        const overlayLocationDetail = document.getElementById(
+          "overlay-location-detail"
+        );
+
+        // Create location card - tanpa animasi hover
+        const locationCard = document.createElement("div");
+        locationCard.className =
+          "bg-white border border-gray-200 rounded-xl overflow-hidden";
+        locationCard.innerHTML = `
+          <div class="h-40 bg-gray-200 bg-cover bg-center" style="background-image: url('${
+            location.image
+          }')"></div>
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-bold text-lg text-dark">${location.title}</h3>
+              <span class="text-xs font-medium px-2 py-1 rounded-full text-white" style="background-color: ${getTypeColor(
+                location.type
+              )}">${location.type}</span>
+            </div>
+            <p class="text-gray-600 mb-4 text-sm">${location.description}</p>
+            
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <h4 class="font-medium text-gray-700 text-xs mb-1">Nilai Potensi</h4>
+                  <p class="text-dark font-semibold text-sm">${
+                    location.potential
+                  }</p>
+                </div>
+                <div>
+                  <h4 class="font-medium text-gray-700 text-xs mb-1">Akses Jalan</h4>
+                  <p class="text-dark font-semibold text-sm">${
+                    location.access
+                  }</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <h4 class="font-medium text-gray-700 text-xs mb-1">Jarak Dari Kecamatan</h4>
+                  <p class="text-dark font-semibold text-sm">${
+                    location.distance
+                  }</p>
+                </div>
+                <div>
+                  <h4 class="font-medium text-gray-700 text-xs mb-1">Kecamatan</h4>
+                  <p class="text-dark font-semibold text-sm">${
+                    location.kecamatan
+                  }</p>
+                </div>
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-700 text-xs mb-1">Desa</h4>
+                <p class="text-dark font-semibold text-sm">${location.desa}</p>
+              </div>
+              
+              <!-- Rekomendasi AI -->
+              <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <h4 class="font-semibold text-blue-800 text-sm mb-2">Rekomendasi AI</h4>
+                <div class="space-y-2">
+                  <div>
+                    <p class="text-xs text-blue-700 font-medium mb-1">Tingkat Kelayakan Lokasi</p>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                      <div class="bg-green-500 h-2 rounded-full" style="width: ${
+                        location.feasibility
+                      }%"></div>
+                    </div>
+                    <p class="text-xs text-blue-700 mt-1">${
+                      location.feasibility
+                    }% - ${getFeasibilityText(location.feasibility)}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-blue-700 font-medium mb-1">Sektor Ideal</p>
+                    <p class="text-xs text-blue-700">${location.idealSector}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-blue-700 font-medium mb-1">Risiko & Peluang</p>
+                    <p class="text-xs text-blue-700">${
+                      location.risksOpportunities
+                    }</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-t border-gray-200">
+              <button
+                class="w-full bg-primary text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+              >
+                <i class="fas fa-download mr-1"></i> Unduh Data Lengkap
+              </button>
+            </div>
+          </div>
+        `;
+
+        // Replace content in overlay location detail
+        overlayLocationDetail.innerHTML = "";
+        overlayLocationDetail.appendChild(locationCard);
+
+        // Store current location details
+        currentLocationDetails = location;
+      }
+
+      // Helper function to get color based on type
+      function getTypeColor(type) {
+        const colors = {
+          Pariwisata: "#3b82f6",
+          Pertanian: "#10b981",
+          UMKM: "#8b5cf6",
+          Perikanan: "#f59e0b",
+        };
+        return colors[type] || "#6b7280";
+      }
+
+      // Helper function to get feasibility text
+      function getFeasibilityText(percentage) {
+        if (percentage >= 80) return "Sangat Layak";
+        if (percentage >= 60) return "Layak";
+        if (percentage >= 40) return "Cukup Layak";
+        return "Kurang Layak";
+      }
+
+      // Initialize map and filters when page loads
+      window.addEventListener("load", function () {
+        initInteractiveMap();
+        initializeFilters();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Peluang Investasi - Kompas Pacitan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1a73e8",
+              secondary: "#34a853",
+              accent: "#fbbc05",
+              dark: "#1e293b",
+              light: "#f8fafc",
+            },
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        padding-top: 80px;
+      }
+
+      .gradient-bg {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      }
+
+      .gradient-bg-light {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(26, 115, 232, 0.3);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #34a853 0%, #0d8042 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(52, 168, 83, 0.3);
+      }
+
+      .btn-accent {
+        background: linear-gradient(135deg, #fbbc05 0%, #e6a000 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-accent:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(251, 188, 5, 0.3);
+      }
+
+      .nav-link {
+        position: relative;
+        padding-bottom: 5px;
+        font-size: 1.1rem;
+        padding: 0.5rem 1rem;
+      }
+
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #1a73e8;
+        transition: width 0.3s ease;
+      }
+
+      .nav-link:hover::after,
+      .nav-link.active::after {
+        width: 100%;
+      }
+
+      .card-hover {
+        transition: all 0.4s ease;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-modern {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        z-index: 9999;
+      }
+
+      .footer-modern {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      }
+
+      .investasi-hero {
+        height: 450px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .investasi-hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.2),
+          rgba(0, 0, 0, 0.6)
+        );
+      }
+
+      .investasi-hero-content {
+        position: relative;
+        z-index: 2;
+      }
+
+      .sector-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-right: 5px;
+        margin-bottom: 5px;
+      }
+
+      .pariwisata {
+        background-color: #e8f6f3;
+        color: #16a085;
+      }
+
+      .pertanian {
+        background-color: #fef9e7;
+        color: #f39c12;
+      }
+
+      .perikanan {
+        background-color: #eaf2f8;
+        color: #3498db;
+      }
+
+      .umkm {
+        background-color: #fdedec;
+        color: #e74c3c;
+      }
+
+      .properti {
+        background-color: #f4ecf7;
+        color: #8e44ad;
+      }
+
+      .investment-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+
+      .ai-recommendation {
+        background: linear-gradient(135deg, #fef9e7, #fdedec);
+        border-left: 4px solid #34a853;
+        padding: 15px;
+        border-radius: 0 8px 8px 0;
+        margin-top: 15px;
+      }
+
+      .ai-icon {
+        color: #34a853;
+        font-size: 1.2rem;
+        margin-right: 8px;
+      }
+
+      /* Custom styles for mobile */
+      @media (max-width: 768px) {
+        body {
+          padding-top: 70px;
+        }
+
+        .investasi-hero {
+          height: 350px;
+        }
+
+        .search-icon-container {
+          width: 100%;
+        }
+
+        .filter-section .flex-col {
+          gap: 0.75rem;
+        }
+
+        .filter-section .flex-1 {
+          width: 100%;
+        }
+
+        #reset-filter {
+          width: 100%;
+          margin-top: 0.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Header & Navigation -->
+    <header class="header-modern">
+      <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center py-3">
+          <div class="flex items-center space-x-2">
+            <div class="rounded-xl flex items-center justify-center">
+              <img
+                src="assets/image/logo.PNG"
+                alt="Kompas Pacitan Logo"
+                class="w-10 h-10 rounded-lg"
+              />
+            </div>
+            <div>
+              <span class="text-xl font-bold text-gray-800"
+                >KOMPAS<span class="text-primary">PACITAN</span></span
+              >
+              <p class="text-xs text-gray-500 -mt-1">Platform Potensi Desa</p>
+            </div>
+          </div>
+
+          <!-- Desktop Menu -->
+          <nav class="hidden lg:flex space-x-4">
+            <a
+              href="index.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Beranda</a
+            >
+            <a
+              href="peta-potensi.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Peta Potensi</a
+            >
+            <a
+              href="profil-desa.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Profil Desa</a
+            >
+            <a
+              href="peluang-investasi.html"
+              class="nav-link text-primary font-semibold text-sm active"
+              >Peluang Investasi</a
+            >
+            <a
+              href="tentang.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Tentang</a
+            >
+          </nav>
+
+          <div class="flex items-center space-x-3">
+            <a
+              href="login.html"
+              class="hidden md:inline-block btn-primary text-white px-4 py-2 rounded-xl font-semibold shadow text-sm"
+              >Login / Daftar</a
+            >
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="lg:hidden text-gray-600">
+              <i class="fas fa-bars text-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div
+        id="mobile-menu"
+        class="hidden lg:hidden mobile-menu bg-white py-4 px-4 border-t shadow-lg"
+      >
+        <div class="flex flex-col space-y-4">
+          <a href="index.html" class="text-gray-600 text-base pl-3">Beranda</a>
+          <a href="peta-potensi.html" class="text-gray-600 text-base pl-3"
+            >Peta Potensi</a
+          >
+          <a href="profil-desa.html" class="text-gray-600 text-base pl-3"
+            >Profil Desa</a
+          >
+          <a
+            href="peluang-investasi.html"
+            class="text-primary font-semibold text-base border-l-4 border-primary pl-3"
+            >Peluang Investasi</a
+          >
+          <a href="tentang.html" class="text-gray-600 text-base pl-3"
+            >Tentang</a
+          >
+          <div class="pt-3 border-t">
+            <a
+              href="login.html"
+              class="block w-full btn-primary text-white text-center font-semibold py-2 rounded-xl text-sm"
+              >Login / Daftar</a
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 max-w-7xl">
+      <!-- Page Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-2xl md:text-4xl font-bold text-dark mb-3">
+          Peluang Investasi di Kabupaten Pacitan
+        </h1>
+        <p class="text-sm md:text-base text-gray-600 max-w-3xl mx-auto">
+          Temukan berbagai peluang investasi menarik di 166 desa Pacitan. Dari
+          sektor pariwisata, pertanian, perikanan, hingga UMKM.
+        </p>
+      </div>
+
+      <!-- Hero Section -->
+      <div
+        class="investasi-hero mb-8"
+        style="
+          background-image: url('https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+        "
+      >
+        <div class="h-full flex items-end investasi-hero-content p-6">
+          <div class="w-full">
+            <h1 class="text-2xl md:text-3xl font-bold text-white mb-2">
+              Investasi Masa Depan di Pacitan
+            </h1>
+            <p class="text-white text-base md:text-lg mb-4">
+              Raih peluang bisnis dengan potensi keuntungan tinggi di berbagai
+              sektor unggulan
+            </p>
+            <button
+              class="bg-white text-primary font-semibold py-2 px-4 md:px-6 rounded-lg hover:bg-gray-100 transition text-sm"
+            >
+              <i class="fas fa-search mr-2"></i> Jelajahi Peluang
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+        <h3 class="text-lg font-bold text-dark mb-4">
+          <i class="fas fa-filter mr-2 text-primary"></i>Filter Peluang
+          Investasi
+        </h3>
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        >
+          <div class="flex-1">
+            <label
+              for="kecamatan-filter"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Kecamatan</label
+            >
+            <select
+              id="kecamatan-filter"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent bg-white"
+            >
+              <option value="">Semua Kecamatan</option>
+              <option value="Arjosari">Arjosari</option>
+              <option value="Bandar">Bandar</option>
+              <option value="Donorojo">Donorojo</option>
+              <option value="Kebonagung">Kebonagung</option>
+              <option value="Pringkuku">Pringkuku</option>
+              <option value="Punung">Punung</option>
+              <option value="Sudimoro">Sudimoro</option>
+              <option value="Tegalombo">Tegalombo</option>
+              <option value="Tulakan">Tulakan</option>
+              <option value="Nawangan">Nawangan</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label
+              for="sektor-filter"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Sektor</label
+            >
+            <select
+              id="sektor-filter"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent bg-white"
+            >
+              <option value="">Semua Sektor</option>
+              <option value="Pariwisata">Pariwisata</option>
+              <option value="Pertanian">Pertanian</option>
+              <option value="Perikanan">Perikanan</option>
+              <option value="UMKM">UMKM</option>
+              <option value="Properti">Properti</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label
+              for="investasi-search"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Cari Peluang Investasi</label
+            >
+            <div class="relative">
+              <input
+                type="text"
+                id="investasi-search"
+                placeholder="Masukkan kata kunci..."
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent bg-white pl-10"
+              />
+              <div
+                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+              >
+                <i class="fas fa-search text-gray-400"></i>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-end">
+            <button
+              id="reset-filter"
+              class="bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-200 transition text-sm w-full md:w-auto"
+            >
+              <i class="fas fa-redo-alt mr-1"></i> Reset Filter
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Investasi List Section -->
+      <div
+        id="investasi-list"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10"
+      ></div>
+
+      <!-- Login Note -->
+      <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-10">
+        <div class="flex items-start">
+          <i class="fas fa-info-circle text-yellow-500 mt-1 mr-3 text-lg"></i>
+          <div>
+            <h3 class="text-lg font-bold text-yellow-800 mb-1">
+              Ingin melihat analisis AI yang lebih mendalam?
+            </h3>
+            <p class="text-yellow-700">
+              Login atau daftar untuk mengakses fitur analitik AI lengkap
+              termasuk analisis kelayakan lokasi, gap analysis, dan rekomendasi
+              prioritas pembangunan.
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-modern text-white py-8 mt-10">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <div class="flex items-center space-x-2 mb-4">
+              <div
+                class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-map-marked-alt text-white text-lg"></i>
+              </div>
+              <div>
+                <span class="text-xl font-bold"
+                  >KOMPAS<span class="text-blue-400">PACITAN</span></span
+                >
+                <p class="text-xs text-gray-400 -mt-1">Platform Potensi Desa</p>
+              </div>
+            </div>
+            <p class="text-gray-400 mb-4 text-sm">
+              Platform digital untuk mengeksplorasi potensi desa dan peluang
+              investasi di Kabupaten Pacitan.
+            </p>
+            <div class="flex space-x-3">
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Menu Utama</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="index.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Beranda</a
+                >
+              </li>
+              <li>
+                <a
+                  href="peta-potensi.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Peta Potensi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="profil-desa.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Profil Desa</a
+                >
+              </li>
+              <li>
+                <a
+                  href="peluang-investasi.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Peluang Investasi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="tentang.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Tentang</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Tautan Cepat</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Tentang Kami</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Kebijakan Privasi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Syarat & Ketentuan</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Bantuan</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Kontak</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Kontak</h3>
+            <ul class="space-y-3 text-gray-400 text-sm">
+              <li class="flex items-start">
+                <i
+                  class="fas fa-map-marker-alt mt-0.5 mr-3 text-blue-400 text-xs"
+                ></i>
+                <span>Jl. Diponegoro No. 1, Pacitan, Jawa Timur</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-phone mr-3 text-blue-400 text-xs"></i>
+                <span>(0357) 123456</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-envelope mr-3 text-blue-400 text-xs"></i>
+                <span>info@kompaspacitan.go.id</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm"
+        >
+          <p>&copy; 2023 Kompas Pacitan. Hak Cipta Dilindungi.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Data dummy untuk peluang investasi
+      const investasiData = [
+        {
+          id: 1,
+          nama: "Pengembangan Wisata Pantai Teleng Ria",
+          deskripsi:
+            "Pengembangan kawasan wisata pantai dengan fasilitas lengkap di Desa Sidoharjo, Kecamatan Pacitan.",
+          gambar:
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+          lokasi: "Desa Sidoharjo, Kec. Pacitan",
+          sektor: "Pariwisata",
+          estimasiModal: "Rp 1.2 Miliar",
+          potensiKeuntungan: "Rp 350 Juta/tahun",
+          tingkatKelayakan: 85,
+          tingkatKelayakanLabel: "Tinggi",
+          rekomendasiAI:
+            "Tingkat kelayakan: 85% - Potensi pengembalian investasi dalam 3-4 tahun dengan prospek pariwisata yang terus meningkat.",
+          detail: {
+            deskripsiLengkap:
+              "Pantai Teleng Ria memiliki potensi besar sebagai destinasi wisata dengan garis pantai sepanjang 800 meter dan pasir putih yang indah. Investasi ini mencakup pengembangan fasilitas wisata seperti area kuliner, water sport, penginapan, dan area camping. Lokasi strategis dekat dengan pusat kota Pacitan (15 menit) dengan akses jalan yang baik.",
+            kontak:
+              "Bapak Sutrisno (Kepala Desa Sidoharjo)<br>Telepon: 0812-3456-7890<br>Email: sidoharjo@pacitandesa.id",
+            analisisAI: {
+              tingkatKelayakan: "85% (Sangat Layak)",
+              perkiraanROI: "3-4 tahun",
+              risiko:
+                "Rendah - Musim penghujan tidak signifikan mengurangi kunjungan wisata",
+              peluang:
+                "Dapat dikembangkan sebagai paket wisata dengan destinasi lain di Pacitan",
+            },
+          },
+        },
+        {
+          id: 2,
+          nama: "Agrowisata Kebun Jeruk Pamelingan",
+          deskripsi:
+            "Pengembangan agrowisata dengan kebun jeruk seluas 5 hektar di Desa Ploso, Kecamatan Kebonagung.",
+          gambar:
+            "https://images.unsplash.com/photo-1621841957884-0a89a99a41c9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+          lokasi: "Desa Ploso, Kec. Kebonagung",
+          sektor: "Pertanian",
+          estimasiModal: "Rp 800 Juta",
+          potensiKeuntungan: "Rp 200 Juta/tahun",
+          tingkatKelayakan: 72,
+          tingkatKelayakanLabel: "Sedang",
+          rekomendasiAI:
+            "Tingkat kelayakan: 72% - Potensi pengembangan produk olahan jeruk untuk meningkatkan nilai jual.",
+          detail: {
+            deskripsiLengkap:
+              "Kebun Jeruk Pamelingan memiliki potensi besar sebagai destinasi agrowisata dengan luas 5 hektar. Investasi ini mencakup pengembangan fasilitas wisata seperti kebun edukasi, area panen bersama, dan pusat olahan jeruk. Lokasi strategis dengan akses jalan yang mudah dijangkau.",
+            kontak:
+              "Bapak Budi (Kepala Desa Ploso)<br>Telepon: 0812-3456-7891<br>Email: ploso@pacitandesa.id",
+            analisisAI: {
+              tingkatKelayakan: "72% (Cukup Layak)",
+              perkiraanROI: "4-5 tahun",
+              risiko: "Sedang - Perlu manajemen hama yang baik",
+              peluang:
+                "Pengembangan produk olahan jeruk untuk meningkatkan nilai jual",
+            },
+          },
+        },
+        {
+          id: 3,
+          nama: "Budidaya Ikan Nila Sistem Bioflok",
+          deskripsi:
+            "Pengembangan budidaya ikan nila dengan teknologi bioflok di Desa Kembang, Kecamatan Arjosari.",
+          gambar:
+            "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+          lokasi: "Desa Kembang, Kec. Arjosari",
+          sektor: "Perikanan",
+          estimasiModal: "Rp 550 Juta",
+          potensiKeuntungan: "Rp 180 Juta/tahun",
+          tingkatKelayakan: 88,
+          tingkatKelayakanLabel: "Tinggi",
+          rekomendasiAI:
+            "Tingkat kelayakan: 88% - Teknologi bioflok meningkatkan produktivitas hingga 3x lipat dengan risiko penyakit rendah.",
+          detail: {
+            deskripsiLengkap:
+              "Budidaya ikan nila dengan sistem bioflok merupakan teknologi modern yang meningkatkan produktivitas hingga 3x lipat dibanding sistem konvensional. Investasi ini mencakup pembangunan kolam bioflok, sistem sirkulasi air, dan fasilitas pengolahan hasil. Lokasi dekat dengan sumber air bersih dan akses jalan yang memadai.",
+            kontak:
+              "Bapak Joko (Kepala Desa Kembang)<br>Telepon: 0812-3456-7892<br>Email: kembang@pacitandesa.id",
+            analisisAI: {
+              tingkatKelayakan: "88% (Sangat Layak)",
+              perkiraanROI: "3-4 tahun",
+              risiko: "Rendah - Sistem bioflok mengurangi risiko penyakit",
+              peluang:
+                "Permintaan ikan nila terus meningkat di pasar lokal dan regional",
+            },
+          },
+        },
+        {
+          id: 4,
+          nama: "Sentra Kerajinan Batik Khas Pacitan",
+          deskripsi:
+            "Pengembangan sentra produksi dan pemasaran batik khas Pacitan di Desa Arjowinangun, Kecamatan Nawangan.",
+          gambar:
+            "https://images.unsplash.com/photo-1556655848-f3a79cc6d4a4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+          lokasi: "Desa Arjowinangun, Kec. Nawangan",
+          sektor: "UMKM",
+          estimasiModal: "Rp 450 Juta",
+          potensiKeuntungan: "Rp 120 Juta/tahun",
+          tingkatKelayakan: 68,
+          tingkatKelayakanLabel: "Sedang",
+          rekomendasiAI:
+            "Tingkat kelayakan: 68% - Potensi ekspor dengan desain yang inovatif dan pemasaran digital.",
+          detail: {
+            deskripsiLengkap:
+              "Sentra Kerajinan Batik Khas Pacitan bertujuan untuk melestarikan dan mengembangkan batik sebagai warisan budaya sekaligus produk ekonomi kreatif. Investasi ini mencakup pembangunan sentra produksi, pelatihan pengrajin, dan pengembangan pemasaran digital. Lokasi strategis dekat dengan jalur wisata utama Pacitan.",
+            kontak:
+              "Ibu Sari (Kepala Desa Arjowinangun)<br>Telepon: 0812-3456-7893<br>Email: arjowinangun@pacitandesa.id",
+            analisisAI: {
+              tingkatKelayakan: "68% (Cukup Layak)",
+              perkiraanROI: "4-5 tahun",
+              risiko:
+                "Sedang - Perlu inovasi desain dan strategi pemasaran yang tepat",
+              peluang:
+                "Pasar batik premium dan ekspor memiliki potensi pertumbuhan tinggi",
+            },
+          },
+        },
+        {
+          id: 5,
+          nama: "Penginapan Wisata dengan Konsep Alam",
+          deskripsi:
+            "Pembangunan penginapan wisata dengan konsep alam dan budaya lokal di Desa Sekar, Kecamatan Bandar.",
+          gambar:
+            "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+          lokasi: "Desa Sekar, Kec. Bandar",
+          sektor: "Properti",
+          estimasiModal: "Rp 950 Juta",
+          potensiKeuntungan: "Rp 280 Juta/tahun",
+          tingkatKelayakan: 82,
+          tingkatKelayakanLabel: "Tinggi",
+          rekomendasiAI:
+            "Tingkat kelayakan: 82% - Konsep ekowisata sedang tren dengan tingkat okupansi tinggi di musim liburan.",
+          detail: {
+            deskripsiLengkap:
+              "Penginapan wisata dengan konsep alam dan budaya lokal menawarkan pengalaman menginap yang unik dengan memadukan kenyamanan modern dan keaslian alam. Investasi ini mencakup pembangunan 15 unit penginapan, restoran dengan menu lokal, dan fasilitas pendukung. Lokasi dengan pemandangan alam yang indah dan dekat dengan objek wisata.",
+            kontak:
+              "Bapak Rudi (Kepala Desa Sekar)<br>Telepon: 0812-3456-7894<br>Email: sekar@pacitandesa.id",
+            analisisAI: {
+              tingkatKelayakan: "82% (Sangat Layak)",
+              perkiraanROI: "3-4 tahun",
+              risiko: "Rendah - Konsep ekowisata sedang tren",
+              peluang:
+                "Tingkat okupansi tinggi terutama di musim liburan dan akhir pekan",
+            },
+          },
+        },
+        {
+          id: 6,
+          nama: "Sentra Madu Kelengkeng Organik",
+          deskripsi:
+            "Pengembangan sentra madu kelengkeng organik dengan teknologi modern di Desa Tegalombo, Kecamatan Tegalombo.",
+          gambar:
+            "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
+          lokasi: "Desa Tegalombo, Kec. Tegalombo",
+          sektor: "Pertanian",
+          estimasiModal: "Rp 350 Juta",
+          potensiKeuntungan: "Rp 90 Juta/tahun",
+          tingkatKelayakan: 75,
+          tingkatKelayakanLabel: "Sedang",
+          rekomendasiAI:
+            "Tingkat kelayakan: 75% - Produk madu organik memiliki nilai jual tinggi dengan pasar yang terus berkembang.",
+          detail: {
+            deskripsiLengkap:
+              "Sentra Madu Kelengkeng Organik memanfaatkan potensi lokal tanaman kelengkeng yang melimpah di Desa Tegalombo. Investasi ini mencakup pengembangan lebah trigona, teknologi ekstraksi madu modern, dan fasilitas pengemasan. Produk madu organik memiliki nilai jual tinggi dengan permintaan pasar yang terus meningkat.",
+            kontak:
+              "Bapak Agus (Kepala Desa Tegalombo)<br>Telepon: 0812-3456-7895<br>Email: tegalombo@pacitandesa.id",
+            analisisAI: {
+              tingkatKelayakan: "75% (Cukup Layak)",
+              perkiraanROI: "4-5 tahun",
+              risiko:
+                "Sedang - Perlu manajemen kualitas dan sertifikasi organik",
+              peluang:
+                "Pasar madu organik premium memiliki pertumbuhan yang stabil",
+            },
+          },
+        },
+      ];
+
+      // Global variables
+      let currentInvestasi = null;
+
+      // Mobile menu toggle
+      document
+        .getElementById("mobile-menu-button")
+        .addEventListener("click", function () {
+          const mobileMenu = document.getElementById("mobile-menu");
+          mobileMenu.classList.toggle("hidden");
+        });
+
+      // Initialize Investasi List
+      function initializeInvestasiList() {
+        const investasiListContainer =
+          document.getElementById("investasi-list");
+
+        // Clear existing content
+        investasiListContainer.innerHTML = "";
+
+        // Filter data based on selected kecamatan, sektor and search term
+        const selectedKecamatan =
+          document.getElementById("kecamatan-filter").value;
+        const selectedSektor = document.getElementById("sektor-filter").value;
+        const searchTerm = document
+          .getElementById("investasi-search")
+          .value.toLowerCase();
+
+        const filteredInvestasi = investasiData.filter((investasi) => {
+          const matchesKecamatan =
+            !selectedKecamatan ||
+            investasi.lokasi
+              .toLowerCase()
+              .includes(selectedKecamatan.toLowerCase());
+          const matchesSektor =
+            !selectedSektor || investasi.sektor === selectedSektor;
+          const matchesSearch =
+            !searchTerm ||
+            investasi.nama.toLowerCase().includes(searchTerm) ||
+            investasi.deskripsi.toLowerCase().includes(searchTerm) ||
+            investasi.lokasi.toLowerCase().includes(searchTerm);
+
+          return matchesKecamatan && matchesSektor && matchesSearch;
+        });
+
+        // Display message if no results
+        if (filteredInvestasi.length === 0) {
+          investasiListContainer.innerHTML = `
+            <div class="col-span-full text-center py-10">
+              <i class="fas fa-search text-gray-300 text-4xl mb-3"></i>
+              <p class="text-gray-500">Tidak ada peluang investasi yang sesuai dengan filter pencarian.</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Create investasi cards
+        filteredInvestasi.forEach((investasi) => {
+          const investasiCard = document.createElement("div");
+          investasiCard.className =
+            "bg-white rounded-xl shadow-lg overflow-hidden card-hover flex flex-col h-full";
+
+          // Determine badge color based on feasibility
+          let badgeClass = "bg-green-500 text-white";
+          if (investasi.tingkatKelayakan < 70) {
+            badgeClass = "bg-yellow-500 text-dark";
+          } else if (investasi.tingkatKelayakan >= 85) {
+            badgeClass = "bg-green-500 text-white";
+          }
+
+          investasiCard.innerHTML = `
+            <div class="relative">
+              <div class="h-48 bg-cover bg-center" style="background-image: url('${
+                investasi.gambar
+              }')"></div>
+              <span class="investment-badge ${badgeClass}">${
+            investasi.tingkatKelayakanLabel
+          }</span>
+            </div>
+            <div class="p-4 flex flex-col flex-grow">
+              <div class="flex-grow">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="text-lg font-bold text-dark">${investasi.nama}</h3>
+                </div>
+                <span class="sector-badge ${investasi.sektor.toLowerCase()}">${
+            investasi.sektor
+          }</span>
+                <p class="text-gray-600 text-sm mb-4 mt-2">${
+                  investasi.deskripsi
+                }</p>
+                <div class="mb-2">
+                  <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> ${
+                    investasi.lokasi
+                  }</small>
+                </div>
+                <div class="flex justify-between mb-3">
+                  <div>
+                    <div class="text-gray-500 text-xs">Estimasi Modal</div>
+                    <div class="text-primary font-bold">${
+                      investasi.estimasiModal
+                    }</div>
+                  </div>
+                  <div>
+                    <div class="text-gray-500 text-xs">Potensi Keuntungan</div>
+                    <div class="text-green-500 font-bold">${
+                      investasi.potensiKeuntungan
+                    }</div>
+                  </div>
+                </div>
+                <div class="ai-recommendation">
+                  <div><i class="fas fa-robot ai-icon"></i> <strong>Rekomendasi AI:</strong></div>
+                  <small>${investasi.rekomendasiAI}</small>
+                </div>
+              </div>
+              <div class="mt-4">
+                <a href="detail-investasi.html?id=${
+                  investasi.id
+                }" class="block w-full text-center bg-primary text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition text-sm view-investasi-btn">
+                  <i class="fas fa-eye mr-1"></i> Lihat Detail
+                </a>
+              </div>
+            </div>
+          `;
+          investasiListContainer.appendChild(investasiCard);
+        });
+      }
+
+      // Filter functionality
+      document
+        .getElementById("kecamatan-filter")
+        .addEventListener("change", initializeInvestasiList);
+      document
+        .getElementById("sektor-filter")
+        .addEventListener("change", initializeInvestasiList);
+      document
+        .getElementById("investasi-search")
+        .addEventListener("input", initializeInvestasiList);
+      document
+        .getElementById("reset-filter")
+        .addEventListener("click", function () {
+          document.getElementById("kecamatan-filter").value = "";
+          document.getElementById("sektor-filter").value = "";
+          document.getElementById("investasi-search").value = "";
+          initializeInvestasiList();
+        });
+
+      // Initialize the page
+      window.addEventListener("load", function () {
+        initializeInvestasiList();
+      });
+    </script>
+  </body>
+</html>

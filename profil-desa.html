@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Profil Desa - Kompas Pacitan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1a73e8",
+              secondary: "#34a853",
+              accent: "#fbbc05",
+              dark: "#1e293b",
+              light: "#f8fafc",
+            },
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        padding-top: 80px; /* Memberikan ruang untuk header fixed */
+      }
+
+      .gradient-bg {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      }
+
+      .gradient-bg-light {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(26, 115, 232, 0.3);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #34a853 0%, #0d8042 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(52, 168, 83, 0.3);
+      }
+
+      .btn-accent {
+        background: linear-gradient(135deg, #fbbc05 0%, #e6a000 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-accent:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(251, 188, 5, 0.3);
+      }
+
+      .nav-link {
+        position: relative;
+        padding-bottom: 5px;
+        font-size: 1.1rem;
+        padding: 0.5rem 1rem;
+      }
+
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #1a73e8;
+        transition: width 0.3s ease;
+      }
+
+      .nav-link:hover::after,
+      .nav-link.active::after {
+        width: 100%;
+      }
+
+      #desa-map {
+        height: 300px;
+        width: 100%;
+        border-radius: 12px;
+        z-index: 1;
+      }
+
+      .map-container {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      .ai-badge {
+        background: rgba(26, 115, 232, 0.1);
+        color: #1a73e8;
+        border-radius: 50px;
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      /* Improved card design */
+      .card-hover {
+        transition: all 0.4s ease;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Loading animation */
+      .loading-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #1a73e8;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Feature icon styles */
+      .feature-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        box-shadow: 0 5px 10px rgba(26, 115, 232, 0.2);
+      }
+
+      .feature-icon i {
+        font-size: 1rem;
+      }
+
+      /* Improved header styles */
+      .header-modern {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        z-index: 9999; /* Z-index sangat tinggi untuk memastikan header selalu di atas */
+      }
+
+      /* Improved footer styles */
+      .footer-modern {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      }
+
+      /* Mobile-specific improvements */
+      @media (max-width: 768px) {
+        body {
+          padding-top: 70px; /* Sesuaikan untuk mobile */
+        }
+
+        #desa-map {
+          height: 250px;
+        }
+
+        .page-header h1 {
+          font-size: 1.75rem;
+        }
+
+        .page-header p {
+          font-size: 0.9rem;
+        }
+
+        .tips-section .feature-icon {
+          width: 35px;
+          height: 35px;
+          margin-bottom: 10px;
+          border-radius: 6px; /* Sesuaikan untuk mobile */
+        }
+
+        .tips-section .feature-icon i {
+          font-size: 0.9rem;
+        }
+
+        .tips-section h3 {
+          font-size: 1rem;
+        }
+
+        .tips-section p {
+          font-size: 0.85rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        #desa-map {
+          height: 200px;
+        }
+
+        .page-header h1 {
+          font-size: 1.5rem;
+        }
+      }
+
+      /* Custom styles for Desa Profile */
+      .desa-hero {
+        height: 300px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .desa-hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.2),
+          rgba(0, 0, 0, 0.6)
+        );
+      }
+
+      .desa-hero-content {
+        position: relative;
+        z-index: 2;
+      }
+
+      .stats-card {
+        border-radius: 12px;
+        transition: all 0.3s ease;
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .tab-button {
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+      }
+
+      .tab-button.active {
+        border-bottom: 3px solid #1a73e8;
+        color: #1a73e8;
+        font-weight: 600;
+      }
+
+      .potensi-item {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+      }
+
+      .potensi-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .galeri-item {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .galeri-item:hover {
+        transform: scale(1.03);
+      }
+
+      .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background-color: #e2e8f0;
+      }
+
+      .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+
+      /* NEW: Improved desktop layout */
+      @media (min-width: 1024px) {
+        .desa-card {
+          height: 380px; /* Fixed height for consistent card sizing */
+          display: flex;
+          flex-direction: column;
+        }
+
+        .desa-card-image {
+          height: 180px; /* Fixed image height */
+          flex-shrink: 0;
+        }
+
+        .desa-card-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
+        .desa-grid {
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 1.5rem;
+        }
+
+        .desa-hero {
+          height: 350px; /* Slightly taller hero for desktop */
+        }
+
+        .tab-content-container {
+          max-width: 1248px;
+          margin: 0 auto;
+        }
+
+        .potensi-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5rem;
+        }
+
+        .infrastruktur-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5rem;
+        }
+
+        .galeri-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+        }
+      }
+
+      @media (min-width: 1280px) {
+        .desa-grid {
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        .potensi-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .infrastruktur-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      @media (min-width: 1536px) {
+        .desa-grid {
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        }
+
+        .potensi-grid {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Header & Navigation -->
+    <header class="header-modern">
+      <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center py-3">
+          <div class="flex items-center space-x-2">
+            <div class="rounded-xl flex items-center justify-center">
+              <img
+                src="assets/image/logo.PNG"
+                alt="Kompas Pacitan Logo"
+                class="w-10 h-10 rounded-lg"
+              />
+            </div>
+            <div>
+              <span class="text-xl font-bold text-gray-800"
+                >KOMPAS<span class="text-primary">PACITAN</span></span
+              >
+              <p class="text-xs text-gray-500 -mt-1">Platform Potensi Desa</p>
+            </div>
+          </div>
+
+          <!-- Desktop Menu -->
+          <nav class="hidden lg:flex space-x-4">
+            <a
+              href="index.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Beranda</a
+            >
+            <a
+              href="peta-potensi.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Peta Potensi</a
+            >
+            <a
+              href="profil-desa.html"
+              class="nav-link text-primary font-semibold text-sm active"
+              >Profil Desa</a
+            >
+            <a
+              href="peluang-investasi.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Peluang Investasi</a
+            >
+            <a
+              href="tentang.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Tentang</a
+            >
+          </nav>
+
+          <div class="flex items-center space-x-3">
+            <a
+              href="login.html"
+              class="hidden md:inline-block btn-primary text-white px-4 py-2 rounded-xl font-semibold shadow text-sm"
+              >Login / Daftar</a
+            >
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="lg:hidden text-gray-600">
+              <i class="fas fa-bars text-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div
+        id="mobile-menu"
+        class="hidden lg:hidden mobile-menu bg-white py-4 px-4 border-t shadow-lg"
+      >
+        <div class="flex flex-col space-y-4">
+          <a href="index.html" class="text-gray-600 text-base pl-3">Beranda</a>
+          <a href="peta-potensi.html" class="text-gray-600 text-base pl-3"
+            >Peta Potensi</a
+          >
+          <a
+            href="profil-desa.html"
+            class="text-primary font-semibold text-base border-l-4 border-primary pl-3"
+            >Profil Desa</a
+          >
+          <a href="peluang-investasi.html" class="text-gray-600 text-base pl-3"
+            >Peluang Investasi</a
+          >
+          <a href="tentang.html" class="text-gray-600 text-base pl-3"
+            >Tentang</a
+          >
+          <div class="pt-3 border-t">
+            <a
+              href="login.html"
+              class="block w-full btn-primary text-white text-center font-semibold py-2 rounded-xl text-sm"
+              >Login / Daftar</a
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 max-w-7xl">
+      <!-- Page Header -->
+      <div class="text-center mb-8 page-header">
+        <h1 class="text-2xl md:text-4xl font-bold text-dark mb-3">
+          Profil Desa di Kabupaten Pacitan
+        </h1>
+        <p class="text-sm md:text-base text-gray-600 max-w-3xl mx-auto">
+          Temukan informasi lengkap tentang 166 desa di Kabupaten Pacitan,
+          termasuk potensi, aset, infrastruktur, dan peluang investasi
+        </p>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        >
+          <div class="flex-1">
+            <label
+              for="kecamatan-filter"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Filter Berdasarkan Kecamatan</label
+            >
+            <select
+              id="kecamatan-filter"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent bg-white"
+            >
+              <option value="">Semua Kecamatan</option>
+              <option value="Arjosari">Arjosari</option>
+              <option value="Bandar">Bandar</option>
+              <option value="Donorojo">Donorojo</option>
+              <option value="Kebonagung">Kebonagung</option>
+              <option value="Pringkuku">Pringkuku</option>
+              <option value="Punung">Punung</option>
+              <option value="Sudimoro">Sudimoro</option>
+              <option value="Takeran">Takeran</option>
+              <option value="Tegalombo">Tegalombo</option>
+              <option value="Tulakan">Tulakan</option>
+              <option value="Nawangan">Nawangan</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label
+              for="search-desa"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Cari Nama Desa</label
+            >
+            <div class="relative">
+              <input
+                type="text"
+                id="search-desa"
+                placeholder="Masukkan nama desa..."
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent bg-white pl-10"
+              />
+              <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+          </div>
+          <div class="flex items-end">
+            <button
+              id="reset-filter"
+              class="bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-200 transition text-sm w-full md:w-auto"
+            >
+              <i class="fas fa-redo-alt mr-1"></i> Reset Filter
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desa List Section -->
+      <div
+        id="desa-list"
+        class="desa-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10"
+      >
+        <!-- Desa cards will be dynamically loaded here -->
+      </div>
+
+      <!-- Selected Desa Detail Section -->
+      <div id="desa-detail" class="hidden">
+        <!-- Back Button -->
+        <div class="mb-6">
+          <button
+            id="back-to-list"
+            class="flex items-center text-primary font-medium hover:text-blue-700 transition"
+          >
+            <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar Desa
+          </button>
+        </div>
+
+        <!-- Desa Hero Section -->
+        <div class="desa-hero mb-6" id="desa-hero">
+          <div class="h-full flex items-end desa-hero-content p-6">
+            <div>
+              <h1 class="text-3xl font-bold text-white mb-2" id="desa-nama">
+                Nama Desa
+              </h1>
+              <p class="text-white text-lg" id="desa-kecamatan">Kecamatan</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="bg-white rounded-xl shadow-lg mb-6 overflow-hidden">
+          <div class="flex overflow-x-auto">
+            <button
+              class="tab-button py-4 px-6 text-sm font-medium text-gray-600 whitespace-nowrap active"
+              data-tab="overview"
+            >
+              <i class="fas fa-info-circle mr-2"></i>Overview Desa
+            </button>
+            <button
+              class="tab-button py-4 px-6 text-sm font-medium text-gray-600 whitespace-nowrap"
+              data-tab="potensi"
+            >
+              <i class="fas fa-chart-line mr-2"></i>Potensi & Aset
+            </button>
+            <button
+              class="tab-button py-4 px-6 text-sm font-medium text-gray-600 whitespace-nowrap"
+              data-tab="infrastruktur"
+            >
+              <i class="fas fa-road mr-2"></i>Infrastruktur
+            </button>
+            <button
+              class="tab-button py-4 px-6 text-sm font-medium text-gray-600 whitespace-nowrap"
+              data-tab="investasi"
+            >
+              <i class="fas fa-handshake mr-2"></i>Peluang Investasi
+            </button>
+            <button
+              class="tab-button py-4 px-6 text-sm font-medium text-gray-600 whitespace-nowrap"
+              data-tab="galeri"
+            >
+              <i class="fas fa-images mr-2"></i>Galeri
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab-content" class="tab-content-container">
+          <!-- Overview Tab -->
+          <div class="tab-pane active" id="overview-tab">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h2 class="text-xl font-bold text-dark mb-4">Deskripsi Desa</h2>
+              <p class="text-gray-700 mb-6" id="desa-deskripsi">
+                Deskripsi desa akan dimuat di sini.
+              </p>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="map-container">
+                  <div id="desa-map"></div>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-dark mb-4">
+                    Statistik Desa
+                  </h3>
+                  <div class="space-y-4">
+                    <div>
+                      <div class="flex justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-700"
+                          >Jumlah Penduduk</span
+                        >
+                        <span
+                          class="text-sm font-medium text-gray-700"
+                          id="stat-penduduk"
+                          >0</span
+                        >
+                      </div>
+                      <div class="progress-bar">
+                        <div
+                          class="progress-fill bg-primary"
+                          style="width: 0%"
+                          id="progress-penduduk"
+                        ></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="flex justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-700"
+                          >Luas Wilayah</span
+                        >
+                        <span
+                          class="text-sm font-medium text-gray-700"
+                          id="stat-luas"
+                          >0 Ha</span
+                        >
+                      </div>
+                      <div class="progress-bar">
+                        <div
+                          class="progress-fill bg-green-500"
+                          style="width: 0%"
+                          id="progress-luas"
+                        ></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="flex justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-700"
+                          >Jumlah UMKM</span
+                        >
+                        <span
+                          class="text-sm font-medium text-gray-700"
+                          id="stat-umkm"
+                          >0</span
+                        >
+                      </div>
+                      <div class="progress-bar">
+                        <div
+                          class="progress-fill bg-purple-500"
+                          style="width: 0%"
+                          id="progress-umkm"
+                        ></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="flex justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-700"
+                          >Lahan Pertanian</span
+                        >
+                        <span
+                          class="text-sm font-medium text-gray-700"
+                          id="stat-pertanian"
+                          >0 Ha</span
+                        >
+                      </div>
+                      <div class="progress-bar">
+                        <div
+                          class="progress-fill bg-orange-500"
+                          style="width: 0%"
+                          id="progress-pertanian"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Potensi & Aset Tab -->
+          <div class="tab-pane hidden" id="potensi-tab">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h2 class="text-xl font-bold text-dark mb-4">
+                Potensi & Aset Desa
+              </h2>
+
+              <div
+                class="potensi-grid grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+              >
+                <!-- Aset Tanah -->
+                <div
+                  class="potensi-item bg-white border border-gray-200 rounded-xl p-4"
+                >
+                  <div class="flex items-center mb-3">
+                    <div
+                      class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3"
+                    >
+                      <i class="fas fa-map-marked-alt text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-dark">Aset Tanah</h3>
+                  </div>
+                  <ul class="space-y-2" id="aset-tanah-list">
+                    <!-- Aset tanah items will be loaded here -->
+                  </ul>
+                </div>
+
+                <!-- Lokasi Wisata -->
+                <div
+                  class="potensi-item bg-white border border-gray-200 rounded-xl p-4"
+                >
+                  <div class="flex items-center mb-3">
+                    <div
+                      class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3"
+                    >
+                      <i class="fas fa-umbrella-beach text-green-600"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-dark">Lokasi Wisata</h3>
+                  </div>
+                  <ul class="space-y-2" id="wisata-list">
+                    <!-- Wisata items will be loaded here -->
+                  </ul>
+                </div>
+
+                <!-- Lahan BUMDes -->
+                <div
+                  class="potensi-item bg-white border border-gray-200 rounded-xl p-4"
+                >
+                  <div class="flex items-center mb-3">
+                    <div
+                      class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3"
+                    >
+                      <i class="fas fa-store text-purple-600"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-dark">Lahan BUMDes</h3>
+                  </div>
+                  <ul class="space-y-2" id="bumdes-list">
+                    <!-- BUMDes items will be loaded here -->
+                  </ul>
+                </div>
+
+                <!-- Produk Unggulan -->
+                <div
+                  class="potensi-item bg-white border border-gray-200 rounded-xl p-4"
+                >
+                  <div class="flex items-center mb-3">
+                    <div
+                      class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3"
+                    >
+                      <i class="fas fa-gift text-orange-600"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-dark">Produk Unggulan</h3>
+                  </div>
+                  <ul class="space-y-2" id="produk-list">
+                    <!-- Produk items will be loaded here -->
+                  </ul>
+                </div>
+              </div>
+
+              <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <h3 class="font-semibold text-blue-800 text-lg mb-2">
+                  Peta Potensi Desa
+                </h3>
+                <p class="text-blue-700 mb-3">
+                  Lihat distribusi potensi dan aset desa dalam peta interaktif
+                </p>
+                <button
+                  class="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-sm"
+                >
+                  <i class="fas fa-map mr-1"></i> Lihat Peta Potensi
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Infrastruktur Tab -->
+          <div class="tab-pane hidden" id="infrastruktur-tab">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h2 class="text-xl font-bold text-dark mb-4">
+                Infrastruktur Desa
+              </h2>
+
+              <div
+                class="infrastruktur-grid grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                <!-- Jalan -->
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-road text-gray-600"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-dark mb-1">Jalan</h3>
+                    <p class="text-gray-700" id="infra-jalan">
+                      Data jalan akan dimuat di sini
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Air -->
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-tint text-blue-600"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-dark mb-1">Air Bersih</h3>
+                    <p class="text-gray-700" id="infra-air">
+                      Data air bersih akan dimuat di sini
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Internet -->
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-wifi text-purple-600"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-dark mb-1">
+                      Jaringan Internet
+                    </h3>
+                    <p class="text-gray-700" id="infra-internet">
+                      Data jaringan internet akan dimuat di sini
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Sekolah -->
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-school text-green-600"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-dark mb-1">Sekolah</h3>
+                    <p class="text-gray-700" id="infra-sekolah">
+                      Data sekolah akan dimuat di sini
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Kesehatan -->
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-hospital text-red-600"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-dark mb-1">
+                      Fasilitas Kesehatan
+                    </h3>
+                    <p class="text-gray-700" id="infra-kesehatan">
+                      Data fasilitas kesehatan akan dimuat di sini
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Listrik -->
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-bolt text-yellow-600"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-bold text-dark mb-1">Listrik</h3>
+                    <p class="text-gray-700" id="infra-listrik">
+                      Data listrik akan dimuat di sini
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Peluang Investasi Tab -->
+          <div class="tab-pane hidden" id="investasi-tab">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h2 class="text-xl font-bold text-dark mb-4">
+                Peluang Investasi Desa
+              </h2>
+
+              <div id="investasi-list" class="space-y-6">
+                <!-- Investasi items will be loaded here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Galeri Tab -->
+          <div class="tab-pane hidden" id="galeri-tab">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <h2 class="text-xl font-bold text-dark mb-4">Galeri Desa</h2>
+
+              <div
+                id="galeri-grid"
+                class="galeri-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+              >
+                <!-- Galeri items will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-modern text-white py-8 mt-10">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <div class="flex items-center space-x-2 mb-4">
+              <div
+                class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-map-marked-alt text-white text-lg"></i>
+              </div>
+              <div>
+                <span class="text-xl font-bold"
+                  >KOMPAS<span class="text-blue-400">PACITAN</span></span
+                >
+                <p class="text-xs text-gray-400 -mt-1">Platform Potensi Desa</p>
+              </div>
+            </div>
+            <p class="text-gray-400 mb-4 text-sm">
+              Platform digital untuk mengeksplorasi potensi desa dan peluang
+              investasi di Kabupaten Pacitan.
+            </p>
+            <div class="flex space-x-3">
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Menu Utama</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="index.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Beranda</a
+                >
+              </li>
+              <li>
+                <a
+                  href="peta-potensi.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Peta Potensi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="profil-desa.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Profil Desa</a
+                >
+              </li>
+              <li>
+                <a
+                  href="peluang-investasi.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Peluang Investasi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="tentang.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Tentang</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Tautan Cepat</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Tentang Kami</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Kebijakan Privasi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Syarat & Ketentuan</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Bantuan</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Kontak</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Kontak</h3>
+            <ul class="space-y-3 text-gray-400 text-sm">
+              <li class="flex items-start">
+                <i
+                  class="fas fa-map-marker-alt mt-0.5 mr-3 text-blue-400 text-xs"
+                ></i>
+                <span>Jl. Diponegoro No. 1, Pacitan, Jawa Timur</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-phone mr-3 text-blue-400 text-xs"></i>
+                <span>(0357) 123456</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-envelope mr-3 text-blue-400 text-xs"></i>
+                <span>info@kompaspacitan.go.id</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm"
+        >
+          <p>&copy; 2023 Kompas Pacitan. Hak Cipta Dilindungi.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+      // Data dummy untuk 10 desa di Pacitan
+      const desaData = [
+        {
+          id: 1,
+          nama: "Baleharjo",
+          kecamatan: "Kebonagung",
+          deskripsi:
+            "Desa Baleharjo merupakan salah satu desa di Kecamatan Kebonagung yang memiliki potensi besar di bidang pertanian dan UMKM. Desa ini dikenal dengan hasil pertanian padi dan jagung yang melimpah, serta sentra kerajinan anyaman bambu yang telah menembus pasar regional.",
+          gambar:
+            "https://images.unsplash.com/photo-1540959733332-5c2e34c6e446?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.1896, 111.0924],
+          statistik: {
+            penduduk: 3421,
+            luas: 12.5,
+            umkm: 28,
+            pertanian: 8.2,
+          },
+          asetTanah: [
+            "Lahan kosong 5 Ha",
+            "Tanah kas desa 3 Ha",
+            "Lahan BUMDes 2 Ha",
+          ],
+          wisata: ["Curug Baleharjo", "Pemandian Alam Sumber Asri"],
+          bumdes: ["BUMDes Makmur Jaya", "BUMDes Tani Sejahtera"],
+          produkUnggulan: ["Anyaman bambu", "Beras organik", "Kerupuk jagung"],
+          infrastruktur: {
+            jalan: "90% aspal, 10% makadam",
+            air: "PDAM dan sumur bor",
+            internet: "Jaringan 4G tersedia",
+            sekolah: "3 SD, 1 SMP, 1 SMA",
+            kesehatan: "1 Puskesmas, 2 Posyandu",
+            listrik: "100% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengembangan Sentra Kerajinan Bambu",
+              deskripsi:
+                "Pengembangan sentra kerajinan bambu dengan teknologi modern untuk meningkatkan produktivitas dan kualitas produk.",
+              estimasiBiaya: "Rp 350 juta",
+              kontak: "Kepala Desa Baleharjo (081234567890)",
+            },
+            {
+              judul: "Agrowisata dan Edufarm",
+              deskripsi:
+                "Pengembangan lahan pertanian menjadi destinasi agrowisata dengan fasilitas edukasi pertanian.",
+              estimasiBiaya: "Rp 500 juta",
+              kontak: "BUMDes Makmur Jaya (081234567891)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1540959733332-5c2e34c6e446?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1564013797765-87cd4425fd6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+        {
+          id: 2,
+          nama: "Ploso",
+          kecamatan: "Pacitan",
+          deskripsi:
+            "Desa Ploso terletak di Kecamatan Pacitan dengan garis pantai yang indah. Desa ini memiliki potensi wisata bahari yang besar dengan pantai berpasir putih dan ombak yang tenang. Selain itu, Ploso juga memiliki potensi perikanan tangkap yang melimpah.",
+          gambar:
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.2068, 111.0799],
+          statistik: {
+            penduduk: 2850,
+            luas: 9.8,
+            umkm: 22,
+            pertanian: 3.5,
+          },
+          asetTanah: [
+            "Lahan pantai 7 Ha",
+            "Tanah kas desa 2 Ha",
+            "Lahan BUMDes 1.5 Ha",
+          ],
+          wisata: ["Pantai Teleng Ria", "Pantai Srau"],
+          bumdes: ["BUMDes Bahari Jaya"],
+          produkUnggulan: [
+            "Ikan segar",
+            "Kerupuk ikan",
+            "Oleh-oleh khas pantai",
+          ],
+          infrastruktur: {
+            jalan: "85% aspal, 15% makadam",
+            air: "PDAM dan sumur",
+            internet: "Jaringan 4G tersedia",
+            sekolah: "2 SD, 1 SMP",
+            kesehatan: "1 Puskesmas Pembantu",
+            listrik: "100% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengembangan Wisata Pantai",
+              deskripsi:
+                "Pengembangan fasilitas wisata pantai seperti penginapan, restoran, dan watersport.",
+              estimasiBiaya: "Rp 800 juta",
+              kontak: "Kepala Desa Ploso (081234567892)",
+            },
+            {
+              judul: "Cold Storage untuk Hasil Perikanan",
+              deskripsi:
+                "Pembangunan cold storage untuk menyimpan hasil tangkapan ikan sebelum didistribusikan.",
+              estimasiBiaya: "Rp 450 juta",
+              kontak: "BUMDes Bahari Jaya (081234567893)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+        {
+          id: 3,
+          nama: "Pucangsewu",
+          kecamatan: "Donorojo",
+          deskripsi:
+            "Desa Pucangsewu dikenal sebagai sentra kerajinan anyaman bambu dengan kualitas terbaik di Pacitan. Desa ini memiliki tradisi turun-temurun dalam pembuatan kerajinan bambu yang telah diekspor ke berbagai daerah.",
+          gambar:
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.2234, 111.0678],
+          statistik: {
+            penduduk: 3120,
+            luas: 11.2,
+            umkm: 35,
+            pertanian: 5.8,
+          },
+          asetTanah: [
+            "Lahan bambu 8 Ha",
+            "Tanah kas desa 3 Ha",
+            "Lahan BUMDes 2 Ha",
+          ],
+          wisata: ["Wisata Kerajinan Bambu", "Air Terjun Pucangsewu"],
+          bumdes: ["BUMDes Bambu Kreatif", "BUMDes Tani Makmur"],
+          produkUnggulan: [
+            "Anyaman bambu",
+            "Furnitur bambu",
+            "Kerajinan tangan",
+          ],
+          infrastruktur: {
+            jalan: "80% aspal, 20% makadam",
+            air: "Sumur dan mata air",
+            internet: "Jaringan 4G tersedia",
+            sekolah: "3 SD, 1 SMP",
+            kesehatan: "1 Puskesmas Pembantu",
+            listrik: "98% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengembangan Sentra Kerajinan Bambu Modern",
+              deskripsi:
+                "Modernisasi sentra kerajinan bambu dengan peralatan yang lebih efisien dan pelatihan desain produk.",
+              estimasiBiaya: "Rp 600 juta",
+              kontak: "Kepala Desa Pucangsewu (081234567894)",
+            },
+            {
+              judul: "Ekowisata Bambu",
+              deskripsi:
+                "Pengembangan wisata edukasi tentang budidaya bambu dan proses pembuatan kerajinan.",
+              estimasiBiaya: "Rp 400 juta",
+              kontak: "BUMDes Bambu Kreatif (081234567895)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1591382386627-349b692688ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+        {
+          id: 4,
+          nama: "Sidoharjo",
+          kecamatan: "Bandar",
+          deskripsi:
+            "Desa Sidoharjo memiliki potensi besar di bidang perikanan, khususnya tambak udang vaname. Letaknya yang strategis dekat dengan pantai membuat desa ini menjadi salah satu penghasil udang terbesar di Pacitan.",
+          gambar:
+            "https://images.unsplash.com/photo-1516834474-48c0abc2a902?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.2412, 111.1035],
+          statistik: {
+            penduduk: 2670,
+            luas: 14.3,
+            umkm: 18,
+            pertanian: 2.1,
+          },
+          asetTanah: [
+            "Tambak udang 12 Ha",
+            "Tanah kas desa 2 Ha",
+            "Lahan BUMDes 1.2 Ha",
+          ],
+          wisata: ["Wisata Tambak Udang", "Pantai Sidoharjo"],
+          bumdes: ["BUMDes Mina Sejahtera"],
+          produkUnggulan: ["Udang vaname", "Ikan bandeng", "Kerupuk udang"],
+          infrastruktur: {
+            jalan: "75% aspal, 25% makadam",
+            air: "Sumur dan air laut",
+            internet: "Jaringan 4G tersedia",
+            sekolah: "2 SD, 1 SMP",
+            kesehatan: "1 Puskesmas Pembantu",
+            listrik: "95% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengembangan Tambak Udang Modern",
+              deskripsi:
+                "Modernisasi tambak udang dengan sistem intensif untuk meningkatkan produktivitas.",
+              estimasiBiaya: "Rp 1.2 miliar",
+              kontak: "Kepala Desa Sidoharjo (081234567896)",
+            },
+            {
+              judul: "Pabrik Pengolahan Udang",
+              deskripsi:
+                "Pembangunan pabrik pengolahan udang untuk meningkatkan nilai jual produk.",
+              estimasiBiaya: "Rp 900 juta",
+              kontak: "BUMDes Mina Sejahtera (081234567897)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1516834474-48c0abc2a902?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1574781333179-32b64a0f17c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+        {
+          id: 5,
+          nama: "Semanten",
+          kecamatan: "Punung",
+          deskripsi:
+            "Desa Semanten terletak di kawasan perbukitan dengan pemandangan alam yang indah. Desa ini memiliki potensi wisata alam yang besar, khususnya air terjun dan hutan pinus yang asri.",
+          gambar:
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.1956, 111.1257],
+          statistik: {
+            penduduk: 1980,
+            luas: 16.7,
+            umkm: 15,
+            pertanian: 6.3,
+          },
+          asetTanah: [
+            "Hutan pinus 10 Ha",
+            "Tanah kas desa 4 Ha",
+            "Lahan BUMDes 2.5 Ha",
+          ],
+          wisata: ["Air Terjun Semanten", "Bukit Pinus Semanten"],
+          bumdes: ["BUMDes Wisata Alam", "BUMDes Tani Lestari"],
+          produkUnggulan: ["Madu hutan", "Kopi arabika", "Sayuran organik"],
+          infrastruktur: {
+            jalan: "70% aspal, 30% makadam",
+            air: "Mata air pegunungan",
+            internet: "Jaringan 4G terbatas",
+            sekolah: "2 SD",
+            kesehatan: "1 Posyandu",
+            listrik: "90% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengembangan Ekowisata",
+              deskripsi:
+                "Pengembangan fasilitas ekowisata seperti penginapan, restoran, dan jalur tracking.",
+              estimasiBiaya: "Rp 700 juta",
+              kontak: "Kepala Desa Semanten (081234567898)",
+            },
+            {
+              judul: "Pengolahan Madu dan Kopi",
+              deskripsi:
+                "Pembangunan unit pengolahan madu dan kopi untuk meningkatkan nilai jual produk.",
+              estimasiBiaya: "Rp 350 juta",
+              kontak: "BUMDes Wisata Alam (081234567899)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1439066615861-d1af74d74000?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+        {
+          id: 6,
+          nama: "Bomo",
+          kecamatan: "Tulakan",
+          deskripsi:
+            "Desa Bomo memiliki potensi di bidang pertanian dan peternakan. Lahan yang subur dan sistem irigasi yang baik membuat desa ini menjadi salah satu lumbung padi di Kabupaten Pacitan.",
+          gambar:
+            "https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.2156, 111.1457],
+          statistik: {
+            penduduk: 3250,
+            luas: 13.8,
+            umkm: 24,
+            pertanian: 9.5,
+          },
+          asetTanah: [
+            "Sawah 10 Ha",
+            "Tanah kas desa 3 Ha",
+            "Lahan BUMDes 2 Ha",
+          ],
+          wisata: ["Wisata Persawahan", "Bendungan Bomo"],
+          bumdes: ["BUMDes Tani Makmur", "BUMDes Mandiri"],
+          produkUnggulan: ["Beras premium", "Telur ayam", "Sayuran organik"],
+          infrastruktur: {
+            jalan: "85% aspal, 15% makadam",
+            air: "Irigasi teknis dan sumur",
+            internet: "Jaringan 4G tersedia",
+            sekolah: "3 SD, 1 SMP",
+            kesehatan: "1 Puskesmas Pembantu",
+            listrik: "100% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengembangan Pertanian Organik",
+              deskripsi:
+                "Pengembangan pertanian organik dengan sistem sertifikasi untuk meningkatkan nilai jual produk.",
+              estimasiBiaya: "Rp 450 juta",
+              kontak: "Kepala Desa Bomo (081234567800)",
+            },
+            {
+              judul: "Pabrik Penggilingan Padi Modern",
+              deskripsi:
+                "Pembangunan pabrik penggilingan padi modern untuk meningkatkan kualitas beras.",
+              estimasiBiaya: "Rp 600 juta",
+              kontak: "BUMDes Tani Makmur (081234567801)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1470115633882-6c5bf0e1db0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+        {
+          id: 7,
+          nama: "Gondosari",
+          kecamatan: "Donorojo",
+          deskripsi:
+            "Desa Gondosari terletak di daerah perbukitan dengan pemandangan yang indah. Desa ini memiliki potensi di bidang perkebunan, khususnya tanaman cengkeh dan kopi.",
+          gambar:
+            "https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.2312, 111.0556],
+          statistik: {
+            penduduk: 2450,
+            luas: 15.2,
+            umkm: 20,
+            pertanian: 7.8,
+          },
+          asetTanah: [
+            "Kebun cengkeh 8 Ha",
+            "Tanah kas desa 4 Ha",
+            "Lahan BUMDes 2.2 Ha",
+          ],
+          wisata: ["Perkebunan Cengkeh", "Bukit Gondosari"],
+          bumdes: ["BUMDes Tani Lestari", "BUMDes Kopi Mandiri"],
+          produkUnggulan: ["Cengkeh kering", "Kopi robusta", "Madu hutan"],
+          infrastruktur: {
+            jalan: "65% aspal, 35% makadam",
+            air: "Mata air pegunungan",
+            internet: "Jaringan 4G terbatas",
+            sekolah: "2 SD, 1 SMP",
+            kesehatan: "1 Puskesmas Pembantu",
+            listrik: "92% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengolahan Cengkeh dan Kopi",
+              deskripsi:
+                "Pembangunan unit pengolahan cengkeh dan kopi untuk meningkatkan nilai jual produk.",
+              estimasiBiaya: "Rp 500 juta",
+              kontak: "Kepala Desa Gondosari (081234567802)",
+            },
+            {
+              judul: "Agrowisata Perkebunan",
+              deskripsi:
+                "Pengembangan agrowisata di perkebunan cengkeh dan kopi dengan fasilitas edukasi.",
+              estimasiBiaya: "Rp 400 juta",
+              kontak: "BUMDes Tani Lestari (081234567803)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1447933601403-0c6688de566e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+        {
+          id: 8,
+          nama: "Wareng",
+          kecamatan: "Kebonagung",
+          deskripsi:
+            "Desa Wareng memiliki potensi di bidang pertanian dan peternakan sapi perah. Lahan yang subur dan sistem irigasi yang baik mendukung aktivitas pertanian di desa ini.",
+          gambar:
+            "https://images.unsplash.com/photo-1500595046743-cd271d694d30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.1756, 111.1057],
+          statistik: {
+            penduduk: 2980,
+            luas: 11.5,
+            umkm: 26,
+            pertanian: 8.7,
+          },
+          asetTanah: [
+            "Sawah 9 Ha",
+            "Tanah kas desa 2.5 Ha",
+            "Lahan BUMDes 1.8 Ha",
+          ],
+          wisata: ["Wisata Persawahan", "Peternakan Sapi Perah"],
+          bumdes: ["BUMDes Tani Jaya", "BUMDes Susu Segar"],
+          produkUnggulan: ["Susu segar", "Beras", "Sayuran organik"],
+          infrastruktur: {
+            jalan: "80% aspal, 20% makadam",
+            air: "Irigasi teknis dan sumur",
+            internet: "Jaringan 4G tersedia",
+            sekolah: "3 SD, 1 SMP",
+            kesehatan: "1 Puskesmas Pembantu",
+            listrik: "100% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengolahan Susu Segar",
+              deskripsi:
+                "Pembangunan unit pengolahan susu segar menjadi berbagai produk olahan susu.",
+              estimasiBiaya: "Rp 550 juta",
+              kontak: "Kepala Desa Wareng (081234567804)",
+            },
+            {
+              judul: "Pengembangan Peternakan Sapi Modern",
+              deskripsi:
+                "Modernisasi peternakan sapi dengan sistem yang lebih efisien dan hygienis.",
+              estimasiBiaya: "Rp 750 juta",
+              kontak: "BUMDes Susu Segar (081234567805)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1500595046743-cd271d694d30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1470115633882-6c5bf0e1db0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+        {
+          id: 9,
+          nama: "Belah",
+          kecamatan: "Donorojo",
+          deskripsi:
+            "Desa Belah terletak di daerah pesisir dengan potensi perikanan tangkap yang besar. Selain itu, desa ini juga memiliki potensi wisata pantai yang masih alami dan belum banyak terjamah.",
+          gambar:
+            "https://images.unsplash.com/photo-1471922694854-ff1b63b20054?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.2489, 111.0876],
+          statistik: {
+            penduduk: 2150,
+            luas: 10.3,
+            umkm: 16,
+            pertanian: 2.8,
+          },
+          asetTanah: [
+            "Pantai 6 Ha",
+            "Tanah kas desa 2 Ha",
+            "Lahan BUMDes 1.5 Ha",
+          ],
+          wisata: ["Pantai Belah", "Teluk Belah"],
+          bumdes: ["BUMDes Bahari Mandiri"],
+          produkUnggulan: ["Ikan segar", "Rumput laut", "Kerupuk ikan"],
+          infrastruktur: {
+            jalan: "70% aspal, 30% makadam",
+            air: "Sumur dan air laut",
+            internet: "Jaringan 4G tersedia",
+            sekolah: "2 SD",
+            kesehatan: "1 Posyandu",
+            listrik: "90% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengembangan Wisata Pantai",
+              deskripsi:
+                "Pengembangan fasilitas wisata pantai seperti penginapan, restoran, dan watersport.",
+              estimasiBiaya: "Rp 600 juta",
+              kontak: "Kepala Desa Belah (081234567806)",
+            },
+            {
+              judul: "Budidaya Rumput Laut",
+              deskripsi:
+                "Pengembangan budidaya rumput laut dengan teknologi modern untuk meningkatkan produktivitas.",
+              estimasiBiaya: "Rp 300 juta",
+              kontak: "BUMDes Bahari Mandiri (081234567807)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1471922694854-ff1b63b20054?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+        {
+          id: 10,
+          nama: "Cemeng",
+          kecamatan: "Kebonagung",
+          deskripsi:
+            "Desa Cemeng memiliki potensi di bidang pertanian dan perkebunan. Lahan yang subur dan sistem irigasi yang baik mendukung aktivitas pertanian di desa ini. Selain itu, desa ini juga memiliki potensi wisata alam yang menarik.",
+          gambar:
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          koordinat: [-8.1823, 111.1189],
+          statistik: {
+            penduduk: 2750,
+            luas: 12.8,
+            umkm: 22,
+            pertanian: 9.2,
+          },
+          asetTanah: [
+            "Sawah 8 Ha",
+            "Tanah kas desa 3 Ha",
+            "Lahan BUMDes 2.2 Ha",
+          ],
+          wisata: ["Air Terjun Cemeng", "Persawahan Terasering"],
+          bumdes: ["BUMDes Tani Sejahtera", "BUMDes Wisata Alam"],
+          produkUnggulan: ["Beras organik", "Sayuran", "Buah-buahan"],
+          infrastruktur: {
+            jalan: "75% aspal, 25% makadam",
+            air: "Irigasi teknis dan sumur",
+            internet: "Jaringan 4G tersedia",
+            sekolah: "2 SD, 1 SMP",
+            kesehatan: "1 Puskesmas Pembantu",
+            listrik: "95% teraliri listrik",
+          },
+          peluangInvestasi: [
+            {
+              judul: "Pengembangan Wisata Alam",
+              deskripsi:
+                "Pengembangan fasilitas wisata alam di sekitar air terjun dan persawahan terasering.",
+              estimasiBiaya: "Rp 500 juta",
+              kontak: "Kepala Desa Cemeng (081234567808)",
+            },
+            {
+              judul: "Pengolahan Hasil Pertanian",
+              deskripsi:
+                "Pembangunan unit pengolahan hasil pertanian menjadi produk bernilai tambah.",
+              estimasiBiaya: "Rp 400 juta",
+              kontak: "BUMDes Tani Sejahtera (081234567809)",
+            },
+          ],
+          galeri: [
+            "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1470115633882-6c5bf0e1db0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          ],
+        },
+      ];
+
+      // Global variables
+      let desaMap;
+      let currentDesa = null;
+
+      // Mobile menu toggle
+      document
+        .getElementById("mobile-menu-button")
+        .addEventListener("click", function () {
+          const mobileMenu = document.getElementById("mobile-menu");
+          mobileMenu.classList.toggle("hidden");
+        });
+
+      // Initialize Desa List
+      function initializeDesaList() {
+        const desaListContainer = document.getElementById("desa-list");
+
+        // Clear existing content
+        desaListContainer.innerHTML = "";
+
+        // Filter data based on selected kecamatan and search term
+        const selectedKecamatan =
+          document.getElementById("kecamatan-filter").value;
+        const searchTerm = document
+          .getElementById("search-desa")
+          .value.toLowerCase();
+
+        const filteredDesa = desaData.filter((desa) => {
+          const matchesKecamatan =
+            !selectedKecamatan || desa.kecamatan === selectedKecamatan;
+          const matchesSearch =
+            !searchTerm ||
+            desa.nama.toLowerCase().includes(searchTerm) ||
+            desa.kecamatan.toLowerCase().includes(searchTerm);
+
+          return matchesKecamatan && matchesSearch;
+        });
+
+        // Display message if no results
+        if (filteredDesa.length === 0) {
+          desaListContainer.innerHTML = `
+            <div class="col-span-full text-center py-10">
+              <i class="fas fa-search text-gray-300 text-4xl mb-3"></i>
+              <p class="text-gray-500">Tidak ada desa yang sesuai dengan filter pencarian.</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Create desa cards
+        filteredDesa.forEach((desa) => {
+          const desaCard = document.createElement("div");
+          desaCard.className =
+            "desa-card bg-white rounded-xl shadow-lg overflow-hidden card-hover";
+          desaCard.innerHTML = `
+            <div class="desa-card-image h-48 bg-cover bg-center" style="background-image: url('${
+              desa.gambar
+            }')"></div>
+            <div class="desa-card-content p-4">
+              <div>
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="text-lg font-bold text-dark">${desa.nama}</h3>
+                  <span class="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800">${
+                    desa.kecamatan
+                  }</span>
+                </div>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">${desa.deskripsi.substring(
+                  0,
+                  100
+                )}...</p>
+                <div class="flex justify-between text-xs text-gray-500 mb-4">
+                  <div class="flex items-center">
+                    <i class="fas fa-users mr-1"></i>
+                    <span>${desa.statistik.penduduk} Jiwa</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-store mr-1"></i>
+                    <span>${desa.statistik.umkm} UMKM</span>
+                  </div>
+                  <div class="flex items-center">
+                    <i class="fas fa-tractor mr-1"></i>
+                    <span>${desa.statistik.pertanian} Ha</span>
+                  </div>
+                </div>
+              </div>
+              <button class="w-full bg-primary text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition text-sm view-desa-btn" data-desa-id="${
+                desa.id
+              }">
+                <i class="fas fa-eye mr-1"></i> Lihat Profil
+              </button>
+            </div>
+          `;
+          desaListContainer.appendChild(desaCard);
+        });
+
+        // Add event listeners to view buttons
+        document.querySelectorAll(".view-desa-btn").forEach((button) => {
+          button.addEventListener("click", function () {
+            const desaId = parseInt(this.getAttribute("data-desa-id"));
+            showDesaDetail(desaId);
+          });
+        });
+      }
+
+      // Show Desa Detail
+      function showDesaDetail(desaId) {
+        const desa = desaData.find((d) => d.id === desaId);
+        if (!desa) return;
+
+        currentDesa = desa;
+
+        // Switch to detail view
+        document.getElementById("desa-list").classList.add("hidden");
+        document.getElementById("desa-detail").classList.remove("hidden");
+
+        // Update hero section
+        document.getElementById(
+          "desa-hero"
+        ).style.backgroundImage = `url('${desa.gambar}')`;
+        document.getElementById("desa-nama").textContent = desa.nama;
+        document.getElementById(
+          "desa-kecamatan"
+        ).textContent = `Kecamatan ${desa.kecamatan}`;
+
+        // Update overview tab
+        document.getElementById("desa-deskripsi").textContent = desa.deskripsi;
+        document.getElementById(
+          "stat-penduduk"
+        ).textContent = `${desa.statistik.penduduk} Jiwa`;
+        document.getElementById(
+          "stat-luas"
+        ).textContent = `${desa.statistik.luas} Ha`;
+        document.getElementById(
+          "stat-umkm"
+        ).textContent = `${desa.statistik.umkm} Unit`;
+        document.getElementById(
+          "stat-pertanian"
+        ).textContent = `${desa.statistik.pertanian} Ha`;
+
+        // Update progress bars (using relative values for visualization)
+        document.getElementById("progress-penduduk").style.width = `${Math.min(
+          desa.statistik.penduduk / 50,
+          100
+        )}%`;
+        document.getElementById("progress-luas").style.width = `${Math.min(
+          desa.statistik.luas / 0.2,
+          100
+        )}%`;
+        document.getElementById("progress-umkm").style.width = `${Math.min(
+          desa.statistik.umkm / 0.5,
+          100
+        )}%`;
+        document.getElementById("progress-pertanian").style.width = `${Math.min(
+          desa.statistik.pertanian / 0.15,
+          100
+        )}%`;
+
+        // Initialize map
+        initializeDesaMap(desa.koordinat);
+
+        // Update potensi & aset tab
+        updatePotensiTab(desa);
+
+        // Update infrastruktur tab
+        updateInfrastrukturTab(desa);
+
+        // Update peluang investasi tab
+        updateInvestasiTab(desa);
+
+        // Update galeri tab
+        updateGaleriTab(desa);
+
+        // Scroll to top
+        window.scrollTo(0, 0);
+      }
+
+      // Initialize Desa Map
+      function initializeDesaMap(coords) {
+        if (desaMap) {
+          desaMap.remove();
+        }
+
+        desaMap = L.map("desa-map").setView(coords, 14);
+
+        // Add tile layer (OpenStreetMap)
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(desaMap);
+
+        // Add marker for desa
+        L.marker(coords)
+          .addTo(desaMap)
+          .bindPopup(
+            `<b>${currentDesa.nama}</b><br>Kecamatan ${currentDesa.kecamatan}`
+          )
+          .openPopup();
+      }
+
+      // Update Potensi Tab
+      function updatePotensiTab(desa) {
+        // Aset Tanah
+        const asetTanahList = document.getElementById("aset-tanah-list");
+        asetTanahList.innerHTML = "";
+        desa.asetTanah.forEach((aset) => {
+          const li = document.createElement("li");
+          li.className = "flex items-center text-sm";
+          li.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${aset}`;
+          asetTanahList.appendChild(li);
+        });
+
+        // Wisata
+        const wisataList = document.getElementById("wisata-list");
+        wisataList.innerHTML = "";
+        desa.wisata.forEach((wisata) => {
+          const li = document.createElement("li");
+          li.className = "flex items-center text-sm";
+          li.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${wisata}`;
+          wisataList.appendChild(li);
+        });
+
+        // BUMDes
+        const bumdesList = document.getElementById("bumdes-list");
+        bumdesList.innerHTML = "";
+        desa.bumdes.forEach((bumdes) => {
+          const li = document.createElement("li");
+          li.className = "flex items-center text-sm";
+          li.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${bumdes}`;
+          bumdesList.appendChild(li);
+        });
+
+        // Produk Unggulan
+        const produkList = document.getElementById("produk-list");
+        produkList.innerHTML = "";
+        desa.produkUnggulan.forEach((produk) => {
+          const li = document.createElement("li");
+          li.className = "flex items-center text-sm";
+          li.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i> ${produk}`;
+          produkList.appendChild(li);
+        });
+      }
+
+      // Update Infrastruktur Tab
+      function updateInfrastrukturTab(desa) {
+        document.getElementById("infra-jalan").textContent =
+          desa.infrastruktur.jalan;
+        document.getElementById("infra-air").textContent =
+          desa.infrastruktur.air;
+        document.getElementById("infra-internet").textContent =
+          desa.infrastruktur.internet;
+        document.getElementById("infra-sekolah").textContent =
+          desa.infrastruktur.sekolah;
+        document.getElementById("infra-kesehatan").textContent =
+          desa.infrastruktur.kesehatan;
+        document.getElementById("infra-listrik").textContent =
+          desa.infrastruktur.listrik;
+      }
+
+      // Update Investasi Tab
+      function updateInvestasiTab(desa) {
+        const investasiList = document.getElementById("investasi-list");
+        investasiList.innerHTML = "";
+
+        desa.peluangInvestasi.forEach((investasi) => {
+          const investasiItem = document.createElement("div");
+          investasiItem.className =
+            "bg-white border border-gray-200 rounded-xl p-4";
+          investasiItem.innerHTML = `
+            <h3 class="text-lg font-bold text-dark mb-2">${investasi.judul}</h3>
+            <p class="text-gray-700 mb-3">${investasi.deskripsi}</p>
+            <div class="flex flex-wrap gap-4 mb-3">
+              <div class="flex items-center">
+                <i class="fas fa-money-bill-wave text-green-500 mr-2"></i>
+                <span class="text-sm font-medium">Estimasi: ${investasi.estimasiBiaya}</span>
+              </div>
+            </div>
+            <div class="bg-blue-50 p-3 rounded-lg">
+              <p class="text-blue-700 text-sm"><i class="fas fa-phone mr-2"></i> Kontak: ${investasi.kontak}</p>
+            </div>
+          `;
+          investasiList.appendChild(investasiItem);
+        });
+      }
+
+      // Update Galeri Tab
+      function updateGaleriTab(desa) {
+        const galeriGrid = document.getElementById("galeri-grid");
+        galeriGrid.innerHTML = "";
+
+        desa.galeri.forEach((gambar) => {
+          const galeriItem = document.createElement("div");
+          galeriItem.className = "galeri-item";
+          galeriItem.innerHTML = `
+            <img src="${gambar}" alt="Galeri ${desa.nama}" class="w-full h-48 object-cover">
+          `;
+          galeriGrid.appendChild(galeriItem);
+        });
+      }
+
+      // Back to list
+      document
+        .getElementById("back-to-list")
+        .addEventListener("click", function () {
+          document.getElementById("desa-detail").classList.add("hidden");
+          document.getElementById("desa-list").classList.remove("hidden");
+
+          if (desaMap) {
+            desaMap.remove();
+            desaMap = null;
+          }
+        });
+
+      // Tab switching
+      document.querySelectorAll(".tab-button").forEach((button) => {
+        button.addEventListener("click", function () {
+          const tabName = this.getAttribute("data-tab");
+
+          // Update active tab
+          document.querySelectorAll(".tab-button").forEach((btn) => {
+            btn.classList.remove("active");
+          });
+          this.classList.add("active");
+
+          // Show corresponding tab content
+          document.querySelectorAll(".tab-pane").forEach((pane) => {
+            pane.classList.add("hidden");
+          });
+          document.getElementById(`${tabName}-tab`).classList.remove("hidden");
+        });
+      });
+
+      // Filter functionality
+      document
+        .getElementById("kecamatan-filter")
+        .addEventListener("change", initializeDesaList);
+      document
+        .getElementById("search-desa")
+        .addEventListener("input", initializeDesaList);
+      document
+        .getElementById("reset-filter")
+        .addEventListener("click", function () {
+          document.getElementById("kecamatan-filter").value = "";
+          document.getElementById("search-desa").value = "";
+          initializeDesaList();
+        });
+
+      // Initialize the page
+      window.addEventListener("load", function () {
+        initializeDesaList();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profil Desa - Aplikasi Kompas Pacitan</title>
+    <style>
+      :root {
+        --primary: #1a73e8;
+        --secondary: #34a853;
+        --danger: #ea4335;
+        --warning: #fbbc05;
+        --light: #f8f9fa;
+        --dark: #343a40;
+        --gray: #6c757d;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+      }
+
+      /* Header & Navbar */
+      header {
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary);
+      }
+
+      .nav-menu {
+        display: flex;
+        list-style: none;
+      }
+
+      .nav-menu li {
+        margin-left: 20px;
+      }
+
+      .nav-menu a {
+        text-decoration: none;
+        color: var(--dark);
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      .nav-menu a:hover {
+        color: var(--primary);
+      }
+
+      .login-btn {
+        background-color: var(--primary);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      /* Breadcrumb */
+      .breadcrumb {
+        padding: 15px 0;
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+
+      .breadcrumb a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+
+      /* Main Content */
+      .profile-header {
+        position: relative;
+        margin-bottom: 30px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-image {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+      }
+
+      .header-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        padding: 20px;
+        color: white;
+      }
+
+      .desa-name {
+        font-size: 2rem;
+        margin-bottom: 5px;
+      }
+
+      .kecamatan {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      /* Tabs Navigation */
+      .tabs {
+        display: flex;
+        background: white;
+        border-radius: 8px 8px 0 0;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .tab {
+        padding: 15px 20px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+        border-bottom: 3px solid transparent;
+      }
+
+      .tab.active {
+        border-bottom: 3px solid var(--primary);
+        color: var(--primary);
+      }
+
+      .tab:hover:not(.active) {
+        background-color: #f8f9fa;
+      }
+
+      /* Tab Content */
+      .tab-content {
+        display: none;
+        background: white;
+        padding: 25px;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        color: var(--primary);
+      }
+
+      /* Overview Section */
+      .overview-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+      }
+
+      .desa-description {
+        margin-bottom: 20px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      .stat-card {
+        background: var(--light);
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--primary);
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+
+      .mini-map {
+        height: 200px;
+        background: #e9ecef;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray);
+      }
+
+      /* Potensi & Aset Section */
+      .potensi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+      }
+
+      .potensi-card {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .potensi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .potensi-image {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+      }
+
+      .potensi-content {
+        padding: 15px;
+      }
+
+      .potensi-title {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+      }
+
+      .potensi-desc {
+        font-size: 0.9rem;
+        color: var(--gray);
+        margin-bottom: 10px;
+      }
+
+      .potensi-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: var(--gray);
+      }
+
+      /* Infrastruktur Section */
+      .infra-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+      }
+
+      .infra-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        background: var(--light);
+        border-radius: 8px;
+      }
+
+      .infra-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        color: white;
+      }
+
+      /* Peluang Investasi Section */
+      .investasi-list {
+        display: grid;
+        gap: 20px;
+      }
+
+      .investasi-item {
+        display: grid;
+        grid-template-columns: 150px 1fr auto;
+        gap: 15px;
+        padding: 15px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        transition: all 0.3s;
+      }
+
+      .investasi-item:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .investasi-image {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 4px;
+      }
+
+      .investasi-details {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .investasi-title {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+      }
+
+      .investasi-desc {
+        font-size: 0.9rem;
+        color: var(--gray);
+        margin-bottom: 10px;
+      }
+
+      .investasi-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 0.9rem;
+      }
+
+      .investasi-meta span {
+        display: flex;
+        align-items: center;
+      }
+
+      .investasi-actions {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #0d62d9;
+      }
+
+      .btn-outline {
+        background: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+      }
+
+      .btn-outline:hover {
+        background: var(--primary);
+        color: white;
+      }
+
+      /* Galeri Section */
+      .galeri-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+      }
+
+      .galeri-item {
+        height: 150px;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .galeri-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+      }
+
+      .galeri-item:hover .galeri-image {
+        transform: scale(1.05);
+      }
+
+      /* Footer */
+      footer {
+        background: var(--dark);
+        color: white;
+        padding: 40px 0 20px;
+        margin-top: 50px;
+      }
+
+      .footer-content {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .footer-section h3 {
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+      }
+
+      .footer-links {
+        list-style: none;
+      }
+
+      .footer-links li {
+        margin-bottom: 8px;
+      }
+
+      .footer-links a {
+        color: #adb5bd;
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+
+      .footer-links a:hover {
+        color: white;
+      }
+
+      .copyright {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #495057;
+        color: #adb5bd;
+        font-size: 0.9rem;
+      }
+
+      /* Responsive */
+      @media (max-width: 992px) {
+        .overview-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .footer-content {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .nav-menu {
+          display: none;
+        }
+
+        .tabs {
+          flex-wrap: wrap;
+        }
+
+        .tab {
+          flex: 1 0 50%;
+          text-align: center;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .investasi-item {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .footer-content {
+          grid-template-columns: 1fr;
+        }
+
+        .tab {
+          flex: 1 0 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header & Navigation -->
+    <header>
+      <div class="container">
+        <nav class="navbar">
+          <div class="logo">KOMPAS PACITAN</div>
+          <ul class="nav-menu">
+            <li><a href="index.html">Beranda</a></li>
+            <li><a href="peta-potensi.html">Peta Potensi</a></li>
+            <li><a href="profil-desa.html" class="active">Profil Desa</a></li>
+            <li><a href="peluang-investasi.html">Peluang Investasi</a></li>
+            <li><a href="tentang.html">Tentang</a></li>
+            <li><a href="login.html" class="login-btn">Login</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a href="index.html">Beranda</a> >
+        <a href="profil-desa.html">Profil Desa</a> > <span>Desa Contoh</span>
+      </div>
+
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <img
+          src="https://via.placeholder.com/1200x300"
+          alt="Header Desa"
+          class="header-image"
+        />
+        <div class="header-overlay">
+          <h1 class="desa-name">Desa Contoh</h1>
+          <p class="kecamatan">Kecamatan Pacitan, Kabupaten Pacitan</p>
+        </div>
+      </div>
+
+      <!-- Tabs Navigation -->
+      <div class="tabs">
+        <div class="tab active" data-tab="overview">Overview Desa</div>
+        <div class="tab" data-tab="potensi">Potensi & Aset Desa</div>
+        <div class="tab" data-tab="infrastruktur">Infrastruktur</div>
+        <div class="tab" data-tab="investasi">Peluang Investasi</div>
+        <div class="tab" data-tab="galeri">Galeri</div>
+      </div>
+
+      <!-- Tab Content -->
+      <!-- Overview Desa -->
+      <div id="overview" class="tab-content active">
+        <h2 class="section-title">Overview Desa</h2>
+        <div class="overview-grid">
+          <div>
+            <p class="desa-description">
+              Desa Contoh adalah salah satu desa di Kecamatan Pacitan yang
+              memiliki potensi besar di sektor pariwisata dan pertanian. Dengan
+              panorama alam yang indah dan masyarakat yang ramah, desa ini
+              menjadi destinasi wisata yang menarik bagi wisatawan domestik
+              maupun mancanegara.
+            </p>
+
+            <h3>Statistik Desa</h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-value">3,250</div>
+                <div class="stat-label">Jumlah Penduduk</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">45</div>
+                <div class="stat-label">UMKM</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">120</div>
+                <div class="stat-label">Lahan Pertanian (Ha)</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">15</div>
+                <div class="stat-label">Objek Wisata</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Produk Unggulan</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">5</div>
+                <div class="stat-label">BUMDes</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3>Peta Lokasi Desa</h3>
+            <div class="mini-map">[Peta Lokasi Desa]</div>
+
+            <h3 style="margin-top: 20px">Kontak Pemerintah Desa</h3>
+            <ul style="list-style: none; padding-left: 0">
+              <li style="margin-bottom: 10px">📞 (0357) 123456</li>
+              <li style="margin-bottom: 10px">📧 desacontoh@pacitan.go.id</li>
+              <li style="margin-bottom: 10px">📍 Jl. Raya Pacitan No. 123</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Potensi & Aset Desa -->
+      <div id="potensi" class="tab-content">
+        <h2 class="section-title">Potensi & Aset Desa</h2>
+
+        <h3 style="margin-bottom: 15px">Aset Tanah & Lahan</h3>
+        <div class="potensi-grid">
+          <div class="potensi-card">
+            <img
+              src="https://via.placeholder.com/300x150"
+              alt="Lahan Pertanian"
+              class="potensi-image"
+            />
+            <div class="potensi-content">
+              <h4 class="potensi-title">Lahan Pertanian Subur</h4>
+              <p class="potensi-desc">
+                Luas 85 Ha, cocok untuk tanaman padi, jagung, dan palawija.
+              </p>
+              <div class="potensi-meta">
+                <span>85 Ha</span>
+                <span>Subur</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="potensi-card">
+            <img
+              src="https://via.placeholder.com/300x150"
+              alt="Lahan Kosong"
+              class="potensi-image"
+            />
+            <div class="potensi-content">
+              <h4 class="potensi-title">Lahan Kosong Strategis</h4>
+              <p class="potensi-desc">
+                Lahan 15 Ha di pinggir jalan utama, cocok untuk pengembangan
+                komersial.
+              </p>
+              <div class="potensi-meta">
+                <span>15 Ha</span>
+                <span>Strategis</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin: 30px 0 15px">Lokasi Wisata</h3>
+        <div class="potensi-grid">
+          <div class="potensi-card">
+            <img
+              src="https://via.placeholder.com/300x150"
+              alt="Air Terjun"
+              class="potensi-image"
+            />
+            <div class="potensi-content">
+              <h4 class="potensi-title">Air Terjun Sumber Asri</h4>
+              <p class="potensi-desc">
+                Air terjun setinggi 25 meter dengan pemandangan hutan alami.
+              </p>
+              <div class="potensi-meta">
+                <span>Alam</span>
+                <span>25 meter</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="potensi-card">
+            <img
+              src="https://via.placeholder.com/300x150"
+              alt="Pantai"
+              class="potensi-image"
+            />
+            <div class="potensi-content">
+              <h4 class="potensi-title">Pantai Pasir Putih</h4>
+              <p class="potensi-desc">
+                Pantai dengan pasir putih dan ombak yang tenang, cocok untuk
+                wisata keluarga.
+              </p>
+              <div class="potensi-meta">
+                <span>Pantai</span>
+                <span>2 km</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin: 30px 0 15px">Produk Unggulan</h3>
+        <div class="potensi-grid">
+          <div class="potensi-card">
+            <img
+              src="https://via.placeholder.com/300x150"
+              alt="Kerajinan"
+              class="potensi-image"
+            />
+            <div class="potensi-content">
+              <h4 class="potensi-title">Kerajinan Anyaman Bambu</h4>
+              <p class="potensi-desc">
+                Produk kerajinan tangan anyaman bambu dengan motif khas Pacitan.
+              </p>
+              <div class="potensi-meta">
+                <span>UMKM</span>
+                <span>25 pengrajin</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="potensi-card">
+            <img
+              src="https://via.placeholder.com/300x150"
+              alt="Makanan"
+              class="potensi-image"
+            />
+            <div class="potensi-content">
+              <h4 class="potensi-title">Dodol Mangga</h4>
+              <p class="potensi-desc">
+                Dodol khas Pacitan dengan rasa mangga yang khas dan manis alami.
+              </p>
+              <div class="potensi-meta">
+                <span>Makanan</span>
+                <span>Home industry</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastruktur -->
+      <div id="infrastruktur" class="tab-content">
+        <h2 class="section-title">Infrastruktur Desa</h2>
+
+        <div class="infra-grid">
+          <div class="infra-item">
+            <div class="infra-icon">🛣️</div>
+            <div>
+              <h4>Jalan</h4>
+              <p>85% beraspal</p>
+            </div>
+          </div>
+
+          <div class="infra-item">
+            <div class="infra-icon">💧</div>
+            <div>
+              <h4>Air Bersih</h4>
+              <p>PDAM & Sumur</p>
+            </div>
+          </div>
+
+          <div class="infra-item">
+            <div class="infra-icon">📡</div>
+            <div>
+              <h4>Internet</h4>
+              <p>4G & Fiber Optic</p>
+            </div>
+          </div>
+
+          <div class="infra-item">
+            <div class="infra-icon">🏫</div>
+            <div>
+              <h4>Sekolah</h4>
+              <p>3 SD, 1 SMP</p>
+            </div>
+          </div>
+
+          <div class="infra-item">
+            <div class="infra-icon">🏥</div>
+            <div>
+              <h4>Kesehatan</h4>
+              <p>Puskesmas & 2 Posyandu</p>
+            </div>
+          </div>
+
+          <div class="infra-item">
+            <div class="infra-icon">⚡</div>
+            <div>
+              <h4>Listrik</h4>
+              <p>100% terjangkau</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin: 30px 0 15px">Kondisi Infrastruktur</h3>
+        <p>
+          Desa Contoh memiliki infrastruktur yang cukup memadai dengan akses
+          jalan beraspal sepanjang 12 km yang menghubungkan seluruh dusun.
+          Sistem air bersih telah menjangkau 90% rumah tangga melalui PDAM dan
+          sumur bor. Jaringan listrik telah tersedia di seluruh wilayah desa
+          dengan kualitas yang stabil.
+        </p>
+
+        <p>
+          Di bidang telekomunikasi, desa ini telah terjangkau sinyal 4G dari
+          berbagai operator dan sedang dalam proses pengembangan jaringan fiber
+          optic untuk meningkatkan konektivitas internet. Fasilitas pendidikan
+          terdiri dari 3 SD Negeri dan 1 SMP Negeri yang cukup untuk melayani
+          kebutuhan pendidikan anak-anak di desa.
+        </p>
+      </div>
+
+      <!-- Peluang Investasi -->
+      <div id="investasi" class="tab-content">
+        <h2 class="section-title">Peluang Investasi Desa</h2>
+
+        <div class="investasi-list">
+          <div class="investasi-item">
+            <img
+              src="https://via.placeholder.com/150x100"
+              alt="Penginapan Wisata"
+              class="investasi-image"
+            />
+            <div class="investasi-details">
+              <h3 class="investasi-title">Penginapan Wisata Alam</h3>
+              <p class="investasi-desc">
+                Pembangunan villa dan penginapan di sekitar Air Terjun Sumber
+                Asri dengan kapasitas 50 kamar.
+              </p>
+              <div class="investasi-meta">
+                <span>💰 Estimasi Modal: Rp 2,5 Miliar</span>
+                <span>📈 Potensi ROI: 25% per tahun</span>
+              </div>
+            </div>
+            <div class="investasi-actions">
+              <div
+                class="ai-rekomendasi"
+                style="
+                  background: #d4edda;
+                  color: #155724;
+                  padding: 5px 10px;
+                  border-radius: 4px;
+                  font-size: 0.8rem;
+                  margin-bottom: 10px;
+                "
+              >
+                ✅ Rekomendasi AI: Layak
+              </div>
+              <a href="#" class="btn btn-primary">Lihat Detail</a>
+            </div>
+          </div>
+
+          <div class="investasi-item">
+            <img
+              src="https://via.placeholder.com/150x100"
+              alt="Sentra UMKM"
+              class="investasi-image"
+            />
+            <div class="investasi-details">
+              <h3 class="investasi-title">Sentra UMKM Kerajinan</h3>
+              <p class="investasi-desc">
+                Pengembangan sentra produksi dan pemasaran produk kerajinan
+                anyaman bambu.
+              </p>
+              <div class="investasi-meta">
+                <span>💰 Estimasi Modal: Rp 500 Juta</span>
+                <span>📈 Potensi ROI: 30% per tahun</span>
+              </div>
+            </div>
+            <div class="investasi-actions">
+              <div
+                class="ai-rekomendasi"
+                style="
+                  background: #fff3cd;
+                  color: #856404;
+                  padding: 5px 10px;
+                  border-radius: 4px;
+                  font-size: 0.8rem;
+                  margin-bottom: 10px;
+                "
+              >
+                ⚠️ Rekomendasi AI: Sedang
+              </div>
+              <a href="#" class="btn btn-primary">Lihat Detail</a>
+            </div>
+          </div>
+
+          <div class="investasi-item">
+            <img
+              src="https://via.placeholder.com/150x100"
+              alt="Agrowisata"
+              class="investasi-image"
+            />
+            <div class="investasi-details">
+              <h3 class="investasi-title">Agrowisata Buah Naga</h3>
+              <p class="investasi-desc">
+                Pengembangan kebun buah naga dengan konsep agrowisata dan
+                penjualan langsung.
+              </p>
+              <div class="investasi-meta">
+                <span>💰 Estimasi Modal: Rp 800 Juta</span>
+                <span>📈 Potensi ROI: 22% per tahun</span>
+              </div>
+            </div>
+            <div class="investasi-actions">
+              <div
+                class="ai-rekomendasi"
+                style="
+                  background: #d4edda;
+                  color: #155724;
+                  padding: 5px 10px;
+                  border-radius: 4px;
+                  font-size: 0.8rem;
+                  margin-bottom: 10px;
+                "
+              >
+                ✅ Rekomendasi AI: Layak
+              </div>
+              <a href="#" class="btn btn-primary">Lihat Detail</a>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px; text-align: center">
+          <a href="peluang-investasi.html" class="btn btn-outline"
+            >Lihat Semua Peluang Investasi</a
+          >
+        </div>
+      </div>
+
+      <!-- Galeri -->
+      <div id="galeri" class="tab-content">
+        <h2 class="section-title">Galeri Desa</h2>
+
+        <div class="galeri-grid">
+          <div class="galeri-item">
+            <img
+              src="https://via.placeholder.com/300x200"
+              alt="Foto Desa"
+              class="galeri-image"
+            />
+          </div>
+          <div class="galeri-item">
+            <img
+              src="https://via.placeholder.com/300x200"
+              alt="Foto Desa"
+              class="galeri-image"
+            />
+          </div>
+          <div class="galeri-item">
+            <img
+              src="https://via.placeholder.com/300x200"
+              alt="Foto Desa"
+              class="galeri-image"
+            />
+          </div>
+          <div class="galeri-item">
+            <img
+              src="https://via.placeholder.com/300x200"
+              alt="Foto Desa"
+              class="galeri-image"
+            />
+          </div>
+          <div class="galeri-item">
+            <img
+              src="https://via.placeholder.com/300x200"
+              alt="Foto Desa"
+              class="galeri-image"
+            />
+          </div>
+          <div class="galeri-item">
+            <img
+              src="https://via.placeholder.com/300x200"
+              alt="Foto Desa"
+              class="galeri-image"
+            />
+          </div>
+          <div class="galeri-item">
+            <img
+              src="https://via.placeholder.com/300x200"
+              alt="Foto Desa"
+              class="galeri-image"
+            />
+          </div>
+          <div class="galeri-item">
+            <img
+              src="https://via.placeholder.com/300x200"
+              alt="Foto Desa"
+              class="galeri-image"
+            />
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>KOMPAS PACITAN</h3>
+            <p>
+              Sistem informasi potensi desa dan peluang investasi di Kabupaten
+              Pacitan.
+            </p>
+          </div>
+
+          <div class="footer-section">
+            <h3>Menu Utama</h3>
+            <ul class="footer-links">
+              <li><a href="index.html">Beranda</a></li>
+              <li><a href="peta-potensi.html">Peta Potensi</a></li>
+              <li><a href="profil-desa.html">Profil Desa</a></li>
+              <li><a href="peluang-investasi.html">Peluang Investasi</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h3>Kontak</h3>
+            <ul class="footer-links">
+              <li>📞 (0357) 123456</li>
+              <li>📧 info@kompaspacitan.go.id</li>
+              <li>📍 Jl. Diponegoro No. 1, Pacitan</li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h3>Tautan Cepat</h3>
+            <ul class="footer-links">
+              <li><a href="tentang.html">Tentang Kami</a></li>
+              <li><a href="login.html">Login</a></li>
+              <li><a href="register.html">Registrasi</a></li>
+              <li><a href="#">Kebijakan Privasi</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="copyright">
+          &copy; 2023 Kompas Pacitan. Hak Cipta Dilindungi.
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Tab functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const tabs = document.querySelectorAll(".tab");
+        const tabContents = document.querySelectorAll(".tab-content");
+
+        tabs.forEach((tab) => {
+          tab.addEventListener("click", () => {
+            // Remove active class from all tabs and contents
+            tabs.forEach((t) => t.classList.remove("active"));
+            tabContents.forEach((c) => c.classList.remove("active"));
+
+            // Add active class to clicked tab and corresponding content
+            tab.classList.add("active");
+            const tabId = tab.getAttribute("data-tab");
+            document.getElementById(tabId).classList.add("active");
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

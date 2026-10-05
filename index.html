@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Beranda - Kompas Pacitan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1a73e8",
+              secondary: "#34a853",
+              accent: "#fbbc05",
+              dark: "#1e293b",
+              light: "#f8fafc",
+            },
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      .gradient-bg {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      }
+
+      .gradient-bg-light {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      }
+
+      .hero-bg {
+        background: linear-gradient(
+            rgba(26, 115, 232, 0.9),
+            rgba(13, 71, 161, 0.9)
+          ),
+          url("https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+      }
+
+      .card-hover {
+        transition: all 0.4s ease;
+      }
+
+      .card-hover:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-15px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+
+      .stats-counter {
+        transition: all 0.5s ease;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(26, 115, 232, 0.3);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #34a853 0%, #0d8042 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(52, 168, 83, 0.3);
+      }
+
+      .btn-accent {
+        background: linear-gradient(135deg, #fbbc05 0%, #e6a000 100%);
+        transition: all 0.3s ease;
+      }
+
+      .btn-accent:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(251, 188, 5, 0.3);
+      }
+
+      .nav-link {
+        position: relative;
+        padding-bottom: 5px;
+      }
+
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #1a73e8;
+        transition: width 0.3s ease;
+      }
+
+      .nav-link:hover::after,
+      .nav-link.active::after {
+        width: 100%;
+      }
+
+      .feature-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        box-shadow: 0 8px 16px rgba(26, 115, 232, 0.2);
+      }
+
+      /* NEW: Investment Card Styles */
+      .investment-card {
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+      }
+
+      .investment-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .investment-image {
+        height: 200px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+
+      .investment-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 50px;
+        padding: 6px 14px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .investment-content {
+        padding: 25px;
+      }
+
+      .investment-progress {
+        height: 6px;
+        border-radius: 3px;
+        background-color: #e2e8f0;
+        margin: 15px 0;
+        overflow: hidden;
+      }
+
+      .investment-progress-bar {
+        height: 100%;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #1a73e8, #0d47a1);
+      }
+
+      .investment-tag {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(26, 115, 232, 0.1);
+        color: #1a73e8;
+        border-radius: 50px;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+
+      .investment-tag i {
+        margin-right: 4px;
+      }
+
+      .testimonial-card {
+        background: white;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .testimonial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+      }
+
+      .floating-shape {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: float 8s ease-in-out infinite;
+      }
+
+      .floating-shape-1 {
+        width: 180px;
+        height: 180px;
+        top: 10%;
+        left: 5%;
+        animation-delay: 0s;
+      }
+
+      .floating-shape-2 {
+        width: 130px;
+        height: 130px;
+        bottom: 20%;
+        right: 10%;
+        animation-delay: 2s;
+      }
+
+      .floating-shape-3 {
+        width: 90px;
+        height: 90px;
+        top: 40%;
+        right: 15%;
+        animation-delay: 4s;
+      }
+
+      /* IMPROVED: Leaflet Map Styles */
+      #interactive-map {
+        height: 380px;
+        width: 100%;
+        border-radius: 16px;
+        z-index: 1;
+      }
+
+      .map-container {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+        position: relative;
+        height: 380px;
+        margin-bottom: 0;
+      }
+
+      .map-overlay {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: white;
+        border-radius: 10px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        max-width: 220px;
+      }
+
+      .map-legend {
+        position: absolute;
+        bottom: 16px;
+        right: 16px;
+        background: white;
+        border-radius: 10px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .legend-color {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+
+      /* AI Investment Card Styles */
+      .ai-card {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        box-shadow: 0 10px 30px rgba(26, 115, 232, 0.2);
+        position: relative;
+      }
+
+      .ai-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M0 0h40v40H0V0zm1 1h38v38H1V1z'/%3E%3C/g%3E%3C/svg%3E");
+        z-index: 1;
+      }
+
+      .ai-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(26, 115, 232, 0.3);
+      }
+
+      .ai-badge {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 50px;
+        padding: 6px 14px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* Loading animation for stats */
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      /* Mobile menu animation */
+      .mobile-menu {
+        transition: all 0.3s ease;
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      /* Responsive improvements for mobile */
+      @media (max-width: 768px) {
+        .hero-bg {
+          background-attachment: scroll;
+          padding: 4rem 0;
+        }
+
+        .investment-card {
+          margin-bottom: 1.5rem;
+        }
+
+        .investment-image {
+          height: 160px;
+        }
+
+        .investment-content {
+          padding: 1.25rem;
+        }
+
+        .testimonial-card {
+          padding: 1.25rem;
+          margin-bottom: 1rem;
+        }
+
+        .feature-icon {
+          width: 60px;
+          height: 60px;
+          margin-bottom: 15px;
+        }
+
+        .feature-icon i {
+          font-size: 1.5rem;
+        }
+
+        #interactive-map {
+          height: 300px;
+        }
+
+        .map-container {
+          height: 300px;
+        }
+
+        .floating-shape {
+          display: none;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .hero-bg {
+          padding: 3rem 0;
+        }
+
+        .investment-image {
+          height: 140px;
+        }
+
+        .investment-content {
+          padding: 1rem;
+        }
+
+        .feature-icon {
+          width: 50px;
+          height: 50px;
+          margin-bottom: 12px;
+        }
+
+        .feature-icon i {
+          font-size: 1.25rem;
+        }
+
+        #interactive-map {
+          height: 250px;
+        }
+
+        .map-container {
+          height: 250px;
+        }
+
+        .stats-counter {
+          padding: 1rem;
+        }
+      }
+
+      /* Fix horizontal scroll on mobile */
+      html,
+      body {
+        overflow-x: hidden;
+        max-width: 100%;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+      <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+        <div class="flex justify-between items-center py-3">
+          <div class="flex items-center space-x-2">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center">
+              <img
+                src="assets/image/logo.PNG"
+                alt="Kompas Pacitan Logo"
+                class="w-10 h-10"
+              />
+            </div>
+            <div>
+              <span class="text-xl font-bold text-dark"
+                >KOMPAS<span class="text-primary"> PACITAN</span></span
+              >
+            </div>
+          </div>
+
+          <!-- Desktop Menu -->
+          <nav class="hidden lg:flex space-x-4">
+            <a
+              href="index.html"
+              class="nav-link text-primary font-semibold text-sm active"
+              >Beranda</a
+            >
+            <a
+              href="peta-potensi.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Peta Potensi</a
+            >
+            <a
+              href="profil-desa.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Profil Desa</a
+            >
+            <a
+              href="peluang-investasi.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Peluang Investasi</a
+            >
+            <a
+              href="tentang.html"
+              class="nav-link text-gray-600 hover:text-primary font-medium text-sm"
+              >Tentang</a
+            >
+          </nav>
+
+          <div class="flex items-center space-x-3">
+            <a
+              href="login.html"
+              class="hidden md:inline-block btn-primary text-white px-4 py-2 rounded-xl font-semibold shadow text-sm btn-modern"
+              >Login / Daftar</a
+            >
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="lg:hidden text-gray-600">
+              <i class="fas fa-bars text-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div
+        id="mobile-menu"
+        class="hidden lg:hidden mobile-menu bg-white py-5 px-6 border-t shadow-lg"
+      >
+        <div class="flex flex-col space-y-4">
+          <a
+            href="#"
+            class="text-primary font-semibold text-base border-l-4 border-primary pl-3"
+            >Beranda</a
+          >
+          <a href="peta-potensi.html" class="text-gray-600 text-base pl-3"
+            >Peta Potensi</a
+          >
+          <a href="profil-desa.html" class="text-gray-600 text-base pl-3"
+            >Profil Desa</a
+          >
+          <a href="peluang-investasi.html" class="text-gray-600 text-base pl-3"
+            >Peluang Investasi</a
+          >
+          <a href="tentang.html" class="text-gray-600 text-base pl-3"
+            >Tentang</a
+          >
+          <div class="pt-3 border-t">
+            <a
+              href="login.html"
+              class="block w-full btn-primary text-white text-center font-semibold py-2.5 rounded-xl text-sm"
+              >Login / Daftar</a
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-bg text-white py-16 md:py-24 relative overflow-hidden">
+      <div class="floating-shape floating-shape-1"></div>
+      <div class="floating-shape floating-shape-2"></div>
+      <div class="floating-shape floating-shape-3"></div>
+
+      <div class="container mx-auto px-4 lg:px-8 max-w-7xl relative z-10">
+        <div class="flex flex-col lg:flex-row items-center">
+          <div class="lg:w-1/2 mb-10 lg:mb-0" data-aos="fade-right">
+            <h1
+              class="text-3xl md:text-4xl lg:text-5xl font-bold mb-5 leading-tight"
+            >
+              Temukan Potensi <span class="text-accent">Pacitan</span> yang
+              Menakjubkan
+            </h1>
+            <p class="text-lg md:text-xl mb-6 opacity-90 max-w-2xl">
+              Platform digital untuk mengeksplorasi potensi desa, aset, dan
+              peluang investasi di 166 desa Kabupaten Pacitan.
+            </p>
+            <div
+              class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3"
+            >
+              <a
+                href="peta-potensi.html"
+                class="btn-accent text-dark font-semibold px-6 py-3 rounded-xl text-center shadow-lg text-base"
+                >Lihat Peta Pacitan</a
+              >
+            </div>
+          </div>
+          <div
+            class="lg:w-1/2 flex justify-center"
+            data-aos="fade-left"
+            data-aos-delay="300"
+          ></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-14 gradient-bg-light">
+      <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <div
+            class="p-6 stats-counter bg-white rounded-xl shadow-lg"
+            data-aos="fade-up"
+          >
+            <div
+              class="text-4xl font-bold text-primary mb-2 flex justify-center items-center"
+            >
+              <span id="desa-counter">0</span>
+              <span class="text-2xl ml-2"></span>
+            </div>
+            <div class="text-lg font-semibold text-dark mb-1">Desa</div>
+            <p class="text-gray-500 text-sm">Tersebar di seluruh Pacitan</p>
+          </div>
+          <div
+            class="p-6 stats-counter bg-white rounded-xl shadow-lg"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            <div
+              class="text-4xl font-bold text-secondary mb-2 flex justify-center items-center"
+            >
+              <span id="kecamatan-counter">0</span>
+              <span class="text-2xl ml-2"></span>
+            </div>
+            <div class="text-lg font-semibold text-dark mb-1">Kecamatan</div>
+            <p class="text-gray-500 text-sm">Wilayah administratif</p>
+          </div>
+          <div
+            class="p-6 stats-counter bg-white rounded-xl shadow-lg"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <div
+              class="text-4xl font-bold text-accent mb-2 flex justify-center items-center"
+            >
+              <span id="aset-counter">0</span>
+              <span class="text-2xl ml-2">+</span>
+            </div>
+            <div class="text-lg font-semibold text-dark mb-1">
+              Aset Tercatat
+            </div>
+            <p class="text-gray-500 text-sm">Potensi dan sumber daya</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 bg-white">
+      <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+        <div class="text-center mb-12" data-aos="fade-up">
+          <h2 class="text-3xl md:text-4xl font-bold text-dark mb-3">
+            Fitur Utama Aplikasi
+          </h2>
+          <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            Jelajahi berbagai fitur yang akan membantu Anda menemukan potensi
+            Pacitan
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Feature 1 -->
+          <div
+            class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 card-hover border border-gray-100"
+            data-aos="fade-up"
+            data-aos-delay="0"
+          >
+            <div class="feature-icon">
+              <i class="fas fa-map-marked-alt text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark mb-3 text-center">
+              Peta Potensi Interaktif
+            </h3>
+            <p class="text-gray-600 mb-4 text-center text-sm">
+              Jelajahi peta digital yang menampilkan berbagai potensi desa di
+              Pacitan dengan layer data yang dapat disesuaikan.
+            </p>
+            <a
+              href="peta-potensi.html"
+              class="block w-full bg-primary/10 text-primary font-semibold py-2.5 rounded-xl text-center hover:bg-primary hover:text-white transition text-sm"
+            >
+              Jelajahi Peta
+            </a>
+          </div>
+
+          <!-- Feature 2 -->
+          <div
+            class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 card-hover border border-gray-100"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            <div class="feature-icon">
+              <i class="fa-solid fa-house text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark mb-3 text-center">
+              Profil Digital Desa
+            </h3>
+            <p class="text-gray-600 mb-4 text-center text-sm">
+              Akses informasi lengkap tentang 166 desa di Pacitan, termasuk
+              potensi, aset, dan infrastruktur.
+            </p>
+            <a
+              href="profil-desa.html"
+              class="block w-full bg-primary/10 text-primary font-semibold py-2.5 rounded-xl text-center hover:bg-primary hover:text-white transition text-sm"
+            >
+              Lihat Profil Desa
+            </a>
+          </div>
+
+          <!-- Feature 3 -->
+          <div
+            class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 card-hover border border-gray-100"
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <div class="feature-icon">
+              <i class="fas fa-brain text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark mb-3 text-center">
+              Analitik AI
+            </h3>
+            <p class="text-gray-600 mb-4 text-center text-sm">
+              Dapatkan rekomendasi dan analisis kelayakan investasi dengan
+              teknologi kecerdasan buatan.
+            </p>
+            <a
+              href="peluang-investasi.html"
+              class="block w-full bg-primary/10 text-primary font-semibold py-2.5 rounded-xl text-center hover:bg-primary hover:text-white transition text-sm"
+            >
+              Coba Analitik AI
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Map Section -->
+    <section class="py-16 gradient-bg-light">
+      <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+        <div class="flex flex-col lg:flex-row items-stretch gap-6">
+          <div class="lg:w-2/5" data-aos="fade-right">
+            <h2 class="text-3xl md:text-4xl font-bold text-dark mb-4">
+              Peta Interaktif Potensi Pacitan
+            </h2>
+            <p class="text-lg text-gray-600 mb-6">
+              Jelajahi berbagai layer data untuk menemukan informasi tentang
+              pariwisata, pertanian, perikanan, UMKM, aset desa, dan
+              infrastruktur di Pacitan.
+            </p>
+
+            <div class="space-y-3 mb-6">
+              <div class="flex items-center bg-white p-3 rounded-lg shadow-sm">
+                <div class="w-3 h-3 bg-primary rounded-full mr-3"></div>
+                <span class="font-medium text-sm"
+                  >Pariwisata - Objek wisata dan destinasi</span
+                >
+              </div>
+              <div class="flex items-center bg-white p-3 rounded-lg shadow-sm">
+                <div class="w-3 h-3 bg-secondary rounded-full mr-3"></div>
+                <span class="font-medium text-sm"
+                  >Pertanian - Lahan dan komoditas</span
+                >
+              </div>
+              <div class="flex items-center bg-white p-3 rounded-lg shadow-sm">
+                <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                <span class="font-medium text-sm"
+                  >UMKM - Usaha dan produk lokal</span
+                >
+              </div>
+              <div class="flex items-center bg-white p-3 rounded-lg shadow-sm">
+                <div class="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
+                <span class="font-medium text-sm"
+                  >Perikanan - Potensi kelautan</span
+                >
+              </div>
+            </div>
+
+            <a
+              href="peta-potensi.html"
+              class="inline-flex items-center btn-primary text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg text-sm"
+            >
+              Buka Peta Lengkap
+              <i class="fas fa-arrow-right ml-2 text-xs"></i>
+            </a>
+          </div>
+
+          <div class="lg:w-3/5" data-aos="fade-left" data-aos-delay="300">
+            <div class="map-container">
+              <div id="interactive-map"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Investment Opportunities Section - REDESIGNED -->
+    <section class="py-16 bg-white">
+      <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+        <div class="text-center mb-12" data-aos="fade-up">
+          <h2 class="text-3xl md:text-4xl font-bold text-dark mb-3">
+            Peluang Investasi Desa
+          </h2>
+          <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            Temukan berbagai peluang investasi menguntungkan di desa-desa
+            Pacitan yang telah dianalisis dengan teknologi AI
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Investment 1 -->
+          <div class="investment-card" data-aos="fade-up" data-aos-delay="0">
+            <div
+              class="investment-image"
+              style="
+                background-image: url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80');
+              "
+            >
+              <div class="investment-badge text-primary">
+                <i class="fas fa-robot mr-1"></i> Rekomendasi AI
+              </div>
+            </div>
+            <div class="investment-content">
+              <h3 class="text-xl font-bold text-dark mb-3">
+                Pengembangan Agrowisata
+              </h3>
+              <p class="text-gray-600 mb-4 text-sm">
+                Pengembangan kawasan agrowisata dengan kebun buah dan edukasi
+                pertanian di Desa Contoh.
+              </p>
+
+              <div class="mb-4">
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-500">Terkumpul</span>
+                  <span class="font-semibold text-primary">65%</span>
+                </div>
+                <div class="investment-progress">
+                  <div class="investment-progress-bar" style="width: 65%"></div>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center mb-4">
+                <div>
+                  <div class="text-xs text-gray-500">Estimasi Modal</div>
+                  <div class="font-bold text-lg text-dark">Rp 1,2 Miliar</div>
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500">ROI</div>
+                  <div class="font-bold text-green-600 text-lg">
+                    22% / tahun
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap mb-4">
+                <span class="investment-tag">
+                  <i class="fas fa-leaf"></i> Pertanian
+                </span>
+                <span class="investment-tag">
+                  <i class="fas fa-map-marker-alt"></i> Desa Contoh
+                </span>
+                <span class="investment-tag">
+                  <i class="fas fa-clock"></i> 3-5 Tahun
+                </span>
+              </div>
+
+              <a
+                href="#"
+                class="block w-full btn-primary text-white font-semibold py-3 rounded-xl text-center hover:shadow-lg transition text-sm"
+                >Lihat Detail</a
+              >
+            </div>
+          </div>
+
+          <!-- Investment 2 -->
+          <div class="investment-card" data-aos="fade-up" data-aos-delay="100">
+            <div
+              class="investment-image"
+              style="
+                background-image: url('https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80');
+              "
+            >
+              <div class="investment-badge text-primary">
+                <i class="fas fa-robot mr-1"></i> Rekomendasi AI
+              </div>
+            </div>
+            <div class="investment-content">
+              <h3 class="text-xl font-bold text-dark mb-3">
+                Sentra Kerajinan Anyaman
+              </h3>
+              <p class="text-gray-600 mb-4 text-sm">
+                Pengembangan sentra produksi dan pemasaran kerajinan anyaman
+                bambu khas Pacitan.
+              </p>
+
+              <div class="mb-4">
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-500">Terkumpul</span>
+                  <span class="font-semibold text-primary">42%</span>
+                </div>
+                <div class="investment-progress">
+                  <div class="investment-progress-bar" style="width: 42%"></div>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center mb-4">
+                <div>
+                  <div class="text-xs text-gray-500">Estimasi Modal</div>
+                  <div class="font-bold text-lg text-dark">Rp 850 Juta</div>
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500">ROI</div>
+                  <div class="font-bold text-green-600 text-lg">
+                    18% / tahun
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap mb-4">
+                <span class="investment-tag">
+                  <i class="fas fa-hands"></i> Kerajinan
+                </span>
+                <span class="investment-tag">
+                  <i class="fas fa-map-marker-alt"></i> Desa Bambu
+                </span>
+                <span class="investment-tag">
+                  <i class="fas fa-clock"></i> 2-4 Tahun
+                </span>
+              </div>
+
+              <a
+                href="#"
+                class="block w-full btn-primary text-white font-semibold py-3 rounded-xl text-center hover:shadow-lg transition text-sm"
+                >Lihat Detail</a
+              >
+            </div>
+          </div>
+
+          <!-- Investment 3 -->
+          <div class="investment-card" data-aos="fade-up" data-aos-delay="200">
+            <div
+              class="investment-image"
+              style="
+                background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80');
+              "
+            >
+              <div class="investment-badge text-primary">
+                <i class="fas fa-robot mr-1"></i> Rekomendasi AI
+              </div>
+            </div>
+            <div class="investment-content">
+              <h3 class="text-xl font-bold text-dark mb-3">
+                Homestay Wisata Alam
+              </h3>
+              <p class="text-gray-600 mb-4 text-sm">
+                Pembangunan homestay dan fasilitas pendukung di kawasan wisata
+                alam Desa Contoh.
+              </p>
+
+              <div class="mb-4">
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-500">Terkumpul</span>
+                  <span class="font-semibold text-primary">78%</span>
+                </div>
+                <div class="investment-progress">
+                  <div class="investment-progress-bar" style="width: 78%"></div>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center mb-4">
+                <div>
+                  <div class="text-xs text-gray-500">Estimasi Modal</div>
+                  <div class="font-bold text-lg text-dark">Rp 2,1 Miliar</div>
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500">ROI</div>
+                  <div class="font-bold text-green-600 text-lg">
+                    25% / tahun
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap mb-4">
+                <span class="investment-tag">
+                  <i class="fas fa-tree"></i> Wisata Alam
+                </span>
+                <span class="investment-tag">
+                  <i class="fas fa-map-marker-alt"></i> Desa Hijau
+                </span>
+                <span class="investment-tag">
+                  <i class="fas fa-clock"></i> 4-6 Tahun
+                </span>
+              </div>
+
+              <a
+                href="#"
+                class="block w-full btn-primary text-white font-semibold py-3 rounded-xl text-center hover:shadow-lg transition text-sm"
+                >Lihat Detail</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-10" data-aos="fade-up">
+          <a
+            href="peluang-investasi.html"
+            class="inline-flex items-center bg-transparent border-2 border-primary text-primary font-semibold px-5 py-2.5 rounded-xl hover:bg-primary hover:text-white transition text-sm"
+          >
+            Lihat Semua Peluang Investasi
+            <i class="fas fa-arrow-right ml-2 text-xs"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-16 gradient-bg text-white">
+      <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+        <div class="text-center mb-12" data-aos="fade-up">
+          <h2 class="text-3xl md:text-4xl font-bold mb-3">Apa Kata Mereka?</h2>
+          <p class="text-lg opacity-90 max-w-2xl mx-auto">
+            Testimoni dari pengguna yang telah merasakan manfaat Kompas Pacitan
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="testimonial-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="flex items-center mb-3">
+              <div
+                class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-base mr-3"
+              >
+                AS
+              </div>
+              <div>
+                <h4 class="font-bold text-dark">Ahmad Surya</h4>
+                <p class="text-gray-500 text-xs">Investor</p>
+              </div>
+            </div>
+            <p class="text-gray-600 text-sm">
+              "Berkat Kompas Pacitan, saya menemukan peluang investasi di sektor
+              agrowisata yang sangat menjanjikan. Analisis AI-nya membantu saya
+              mengambil keputusan dengan lebih percaya diri."
+            </p>
+            <div class="flex text-yellow-400 mt-3 text-sm">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+          </div>
+
+          <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="flex items-center mb-3">
+              <div
+                class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-white font-bold text-base mr-3"
+              >
+                BD
+              </div>
+              <div>
+                <h4 class="font-bold text-dark">Budi Darmawan</h4>
+                <p class="text-gray-500 text-xs">Kepala Desa</p>
+              </div>
+            </div>
+            <p class="text-gray-600 text-sm">
+              "Platform ini sangat membantu desa kami dalam mempromosikan
+              potensi yang dimiliki. Sekarang lebih banyak investor yang
+              tertarik untuk mengembangkan desa kami."
+            </p>
+            <div class="flex text-yellow-400 mt-3 text-sm">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+          </div>
+
+          <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="flex items-center mb-3">
+              <div
+                class="w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white font-bold text-base mr-3"
+              >
+                SR
+              </div>
+              <div>
+                <h4 class="font-bold text-dark">Sari Ratna</h4>
+                <p class="text-gray-500 text-xs">Pengusaha UMKM</p>
+              </div>
+            </div>
+            <p class="text-gray-600 text-sm">
+              "Melalui Kompas Pacitan, produk kerajinan kami mendapatkan
+              exposure yang lebih luas. Sekarang kami bisa menjangkup pasar yang
+              lebih besar dengan bantuan platform ini."
+            </p>
+            <div class="flex text-yellow-400 mt-3 text-sm">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 gradient-bg text-white relative overflow-hidden">
+      <div class="floating-shape floating-shape-1"></div>
+      <div class="floating-shape floating-shape-2"></div>
+
+      <div
+        class="container mx-auto px-4 lg:px-8 max-w-7xl text-center relative z-10"
+        data-aos="fade-up"
+      >
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">
+          Siap Menemukan Potensi Pacitan?
+        </h2>
+        <p class="text-lg mb-8 max-w-2xl mx-auto opacity-90">
+          Bergabunglah dengan Kompas Pacitan sekarang dan akses informasi
+          lengkap tentang potensi desa serta peluang investasi.
+        </p>
+        <div
+          class="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4"
+        >
+          <a
+            href="#"
+            class="btn-accent text-dark font-semibold px-6 py-3 rounded-xl text-base shadow-lg"
+            >Daftar Sekarang</a
+          >
+          <a
+            href="#"
+            class="bg-transparent border-2 border-white text-white font-semibold px-6 py-3 rounded-xl hover:bg-white hover:text-primary transition text-base"
+            >Login</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+      <div class="container mx-auto px-4 lg:px-8 max-w-7xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <div class="flex items-center space-x-2 mb-4">
+              <div
+                class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center"
+              >
+                <i class="fas fa-map-marked-alt text-white text-lg"></i>
+              </div>
+              <div>
+                <span class="text-xl font-bold"
+                  >KOMPAS<span class="text-primary">PACITAN</span></span
+                >
+                <p class="text-xs text-gray-400 -mt-1">Platform Potensi Desa</p>
+              </div>
+            </div>
+            <p class="text-gray-400 mb-4 text-sm">
+              Platform digital untuk mengeksplorasi potensi desa dan peluang
+              investasi di Kabupaten Pacitan.
+            </p>
+            <div class="flex space-x-3">
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition text-sm"
+              >
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Menu Utama</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Beranda</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Peta Potensi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="profil-desa.html"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Profil Desa</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Peluang Investasi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Tentang</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Tautan Cepat</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Tentang Kami</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Kebijakan Privasi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Syarat & Ketentuan</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Bantuan</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-white transition text-sm"
+                  >Kontak</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold mb-4">Kontak</h3>
+            <ul class="space-y-3 text-gray-400 text-sm">
+              <li class="flex items-start">
+                <i
+                  class="fas fa-map-marker-alt mt-0.5 mr-3 text-primary text-xs"
+                ></i>
+                <span>Jl. Diponegoro No. 1, Pacitan, Jawa Timur</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-phone mr-3 text-primary text-xs"></i>
+                <span>(0357) 123456</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-envelope mr-3 text-primary text-xs"></i>
+                <span>info@kompaspacitan.go.id</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm"
+        >
+          <p>&copy; 2023 Kompas Pacitan. Hak Cipta Dilindungi.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+      // Initialize AOS
+      AOS.init({
+        duration: 800,
+        once: true,
+        offset: 100,
+      });
+
+      // Mobile menu toggle
+      document
+        .getElementById("mobile-menu-button")
+        .addEventListener("click", function () {
+          const mobileMenu = document.getElementById("mobile-menu");
+          mobileMenu.classList.toggle("hidden");
+        });
+
+      // Counter animation
+      function animateCounter(id, target, duration) {
+        let current = 0;
+        const increment = target / (duration / 16); // 60fps
+        const element = document.getElementById(id);
+
+        const updateCounter = () => {
+          current += increment;
+          if (current < target) {
+            element.textContent = Math.floor(current);
+            requestAnimationFrame(updateCounter);
+          } else {
+            element.textContent = target;
+          }
+        };
+
+        updateCounter();
+      }
+
+      // Initialize counters when page loads
+      window.addEventListener("load", function () {
+        // Add loading effect
+        document.getElementById("desa-counter").classList.add("pulse");
+        document.getElementById("kecamatan-counter").classList.add("pulse");
+        document.getElementById("aset-counter").classList.add("pulse");
+
+        // Start counters after a short delay
+        setTimeout(() => {
+          document.getElementById("desa-counter").classList.remove("pulse");
+          document
+            .getElementById("kecamatan-counter")
+            .classList.remove("pulse");
+          document.getElementById("aset-counter").classList.remove("pulse");
+
+          animateCounter("desa-counter", 166, 2000);
+          animateCounter("kecamatan-counter", 12, 2000);
+          animateCounter("aset-counter", 845, 2000);
+        }, 500);
+      });
+
+      // Initialize Interactive Map
+      function initInteractiveMap() {
+        // Koordinat Pacitan
+        const pacitanCoords = [-8.2068, 111.0799];
+
+        // Initialize map
+        const interactiveMap = L.map("interactive-map").setView(
+          pacitanCoords,
+          11
+        );
+
+        // Add tile layer (OpenStreetMap)
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(interactiveMap);
+
+        // Data dummy untuk marker
+        const dummyData = [
+          {
+            coords: [-8.2068, 111.0799],
+            title: "Pantai Teleng Ria",
+            type: "Pariwisata",
+            description:
+              "Pantai dengan pasir putih dan ombak yang tenang, cocok untuk wisata keluarga.",
+          },
+          {
+            coords: [-8.1896, 111.0924],
+            title: "Kebun Buah Naga",
+            type: "Pertanian",
+            description:
+              "Perkebunan buah naga seluas 15 hektar dengan sistem agrowisata.",
+          },
+          {
+            coords: [-8.2234, 111.0678],
+            title: "Sentra Kerajinan Bambu",
+            type: "UMKM",
+            description:
+              "Pusat produksi kerajinan anyaman bambu dengan 25 pengrajin aktif.",
+          },
+          {
+            coords: [-8.2412, 111.1035],
+            title: "Tambak Udang",
+            type: "Perikanan",
+            description:
+              "Tambak udang vaname seluas 8 hektar dengan sistem budidaya intensif.",
+          },
+          {
+            coords: [-8.1956, 111.1257],
+            title: "Air Terjun Sumber Asri",
+            type: "Pariwisata",
+            description:
+              "Air terjun setinggi 25 meter dengan pemandangan hutan alami.",
+          },
+        ];
+
+        // Define custom pin icons for different types
+        const pinColors = {
+          Pariwisata: "blue",
+          Pertanian: "green",
+          UMKM: "purple",
+          Perikanan: "orange",
+        };
+
+        // Add pin markers to map
+        dummyData.forEach((item) => {
+          // Create custom pin icon
+          const pinIcon = L.divIcon({
+            className: "custom-pin",
+            html: `<div style="background-color: ${
+              pinColors[item.type]
+            }; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg); color: white; font-size: 12px;">
+                       <i class="fas fa-map-pin"></i>
+                     </div>
+                   </div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 24],
+          });
+
+          const marker = L.marker(item.coords, { icon: pinIcon }).addTo(
+            interactiveMap
+          );
+
+          marker.bindPopup(`
+            <div class="p-2">
+              <h3 class="font-bold text-base">${item.title}</h3>
+              <div class="flex items-center mb-2">
+                <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${
+                  pinColors[item.type]
+                }"></div>
+                <span class="text-xs">${item.type}</span>
+              </div>
+              <p class="text-xs">${item.description}</p>
+            </div>
+          `);
+        });
+      }
+
+      // Initialize map when page loads
+      window.addEventListener("load", initInteractiveMap);
+
+      // Investment card interaction
+      document.querySelectorAll(".investment-card").forEach((card) => {
+        card.addEventListener("mouseenter", function () {
+          this.style.transform = "translateY(-10px)";
+        });
+
+        card.addEventListener("mouseleave", function () {
+          this.style.transform = "translateY(0)";
+        });
+      });
+
+      // AI Card interaction
+      document.querySelectorAll(".ai-card").forEach((card) => {
+        card.addEventListener("mouseenter", function () {
+          this.style.transform = "translateY(-10px)";
+        });
+
+        card.addEventListener("mouseleave", function () {
+          this.style.transform = "translateY(0)";
+        });
+      });
+
+      // Testimonial card interaction
+      document.querySelectorAll(".testimonial-card").forEach((card) => {
+        card.addEventListener("mouseenter", function () {
+          this.style.transform = "translateY(-5px)";
+        });
+
+        card.addEventListener("mouseleave", function () {
+          this.style.transform = "translateY(0)";
+        });
+      });
+    </script>
+  </body>
+</html>

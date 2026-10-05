@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOMPAS PACITAN - Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#2c5aa0",
+              secondary: "#4caf50",
+              accent: "#ff9800",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      .gradient-bg {
+        background: linear-gradient(135deg, #2c5aa0, #1a3a7a);
+      }
+
+      .card-shadow {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      .map-container {
+        height: 400px;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .news-image {
+        width: 80px;
+        height: 60px;
+        border-radius: 6px;
+        object-fit: cover;
+      }
+
+      .region-list {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      /* Custom scrollbar */
+      .region-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .region-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .region-list::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+      }
+
+      .region-list::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+      }
+
+      /* Animation for mobile menu */
+      .sidebar-mobile {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+      }
+
+      .sidebar-mobile.open {
+        transform: translateX(0);
+      }
+
+      /* Overlay for mobile menu */
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+
+      .overlay.active {
+        display: block;
+      }
+
+      /* Active navigation item */
+      .nav-item.active {
+        background-color: rgba(44, 90, 160, 0.1);
+        border-left: 4px solid #2c5aa0;
+      }
+
+      .nav-item.active i,
+      .nav-item.active span {
+        color: #2c5aa0;
+      }
+
+      /* Leaflet controls - FIXED: Ensure controls are always visible */
+      .leaflet-container {
+        z-index: 1;
+        font-family: inherit;
+      }
+
+      /* Fix for Leaflet controls z-index */
+      .leaflet-control-container {
+        position: relative;
+        z-index: 1000;
+      }
+
+      .leaflet-control-container .leaflet-top,
+      .leaflet-control-container .leaflet-bottom {
+        z-index: 1000;
+        position: absolute;
+      }
+
+      .leaflet-control-zoom a,
+      .leaflet-control-layers {
+        background-color: white !important;
+        color: #333 !important;
+        border: 1px solid #ccc !important;
+      }
+
+      .leaflet-control-zoom a:hover {
+        background-color: #f4f4f4 !important;
+      }
+
+      .leaflet-control-attribution {
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        color: #333 !important;
+        font-size: 11px;
+        padding: 2px 8px;
+      }
+
+      /* Custom pin marker styling */
+      .custom-pin {
+        background: transparent;
+        border: none;
+      }
+
+      .pin-icon {
+        font-size: 24px;
+        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
+      }
+
+      /* Simple horizontal legend styling */
+      .simple-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+        padding: 8px 0;
+      }
+
+      .legend-item-horizontal {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      }
+
+      .legend-text {
+        font-size: 13px;
+        color: #333;
+      }
+
+      /* Custom popup styling */
+      .custom-popup {
+        border-radius: 10px;
+        padding: 0;
+        min-width: 250px;
+      }
+
+      .popup-header {
+        background: linear-gradient(135deg, #2c5aa0, #1a3a7a);
+        color: white;
+        padding: 12px 15px;
+        border-radius: 10px 10px 0 0;
+      }
+
+      .popup-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .popup-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        margin-top: 5px;
+      }
+
+      .popup-content {
+        padding: 15px;
+      }
+
+      .popup-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+
+      .popup-info i {
+        width: 16px;
+        margin-right: 8px;
+        color: #2c5aa0;
+      }
+
+      .popup-description {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        margin: 10px 0;
+        border-left: 3px solid #2c5aa0;
+      }
+
+      .popup-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .popup-btn {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .popup-btn-primary {
+        background: #2c5aa0;
+        color: white !important; /* PERBAIKAN: Pastikan teks berwarna putih */
+      }
+
+      .popup-btn-secondary {
+        background: #f1f5f9;
+        color: #475569 !important; /* PERBAIKAN: Pastikan teks berwarna gelap */
+        border: 1px solid #e2e8f0;
+      }
+
+      .popup-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      /* PERBAIKAN: Pastikan ikon dalam tombol juga berwarna sesuai */
+      .popup-btn-primary i {
+        color: white !important;
+      }
+
+      .popup-btn-secondary i {
+        color: #475569 !important;
+      }
+
+      /* Ensure map controls don't interfere with mobile sidebar */
+      @media (max-width: 768px) {
+        .leaflet-control-container {
+          z-index: 10;
+        }
+
+        .sidebar-mobile.open ~ .flex-1 .leaflet-control-container {
+          z-index: 10;
+        }
+
+        .simple-legend {
+          gap: 10px;
+          justify-content: flex-start;
+          overflow-x: auto;
+          padding: 8px 5px;
+        }
+
+        .legend-item-horizontal {
+          flex-shrink: 0;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 font-sans text-gray-800">
+    <!-- Mobile Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <div class="flex flex-col h-screen">
+      <!-- Header -->
+      <header class="bg-white card-shadow z-10 py-3">
+        <div class="container mx-auto px-4">
+          <div class="flex items-center justify-between">
+            <!-- Left: Logo, Title, Subtitle -->
+            <div class="flex items-center">
+              <!-- Mobile menu button -->
+              <button
+                class="md:hidden text-gray-600 focus:outline-none mr-4"
+                id="mobileMenuButton"
+              >
+                <i class="fas fa-bars text-lg"></i>
+              </button>
+
+              <div class="flex items-center">
+                <div
+                  class="w-10 h-10 rounded-lg flex items-center justify-center mr-3"
+                >
+                  <img
+                    src="logo.PNG"
+                    alt="Logo Kompas Pacitan"
+                    class="w-9 h-9 rounded"
+                  />
+                </div>
+                <div>
+                  <h1 class="text-lg font-bold text-gray-800">
+                    KOMPAS PACITAN
+                  </h1>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: User Info -->
+            <div class="flex items-center">
+              <div class="text-right mr-3 hidden sm:block">
+                <div class="font-bold text-gray-800 text-sm">Admin User</div>
+                <small class="text-gray-500 text-xs">Administrator</small>
+              </div>
+              <div
+                class="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden"
+              >
+                <i class="fas fa-user text-gray-600 text-sm"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Area with Sidebar -->
+      <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <div class="hidden md:flex md:flex-shrink-0">
+          <div class="w-56 bg-white flex flex-col card-shadow">
+            <!-- Navigation Menu -->
+            <div class="flex flex-col h-full">
+              <nav class="flex-1 px-3 py-4">
+                <ul class="space-y-1">
+                  <li>
+                    <a
+                      href="#"
+                      class="nav-item active flex items-center px-3 py-2 text-gray-700 rounded-lg text-sm"
+                    >
+                      <i class="fas fa-home mr-3"></i>
+                      <span class="font-medium">Dashboard</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="data.html"
+                      class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                    >
+                      <i class="fas fa-database mr-3"></i>
+                      <span class="font-medium">Data</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                    >
+                      <i class="fas fa-user-circle mr-3"></i>
+                      <span class="font-medium">Profil</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                    >
+                      <i class="fas fa-cog mr-3"></i>
+                      <span class="font-medium">Setting</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+
+              <!-- Logout Button - Fixed to bottom -->
+              <div class="mt-auto p-3 border-t border-gray-200">
+                <a
+                  href="#"
+                  class="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm"
+                >
+                  <i class="fas fa-sign-out-alt mr-3"></i>
+                  <span class="font-medium">Logout</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Sidebar -->
+        <div
+          class="sidebar-mobile fixed inset-y-0 left-0 w-56 bg-white card-shadow md:hidden"
+          id="mobileSidebar"
+        >
+          <div class="flex flex-col h-full">
+            <!-- Navigation Menu -->
+            <nav class="flex-1 px-3 py-4">
+              <ul class="space-y-1">
+                <li>
+                  <a
+                    href="#"
+                    class="nav-item active flex items-center px-3 py-2 text-gray-700 rounded-lg text-sm"
+                  >
+                    <i class="fas fa-home mr-3"></i>
+                    <span class="font-medium">Dashboard</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                  >
+                    <i class="fas fa-database mr-3"></i>
+                    <span class="font-medium">Data</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                  >
+                    <i class="fas fa-user-circle mr-3"></i>
+                    <span class="font-medium">Profil</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    class="nav-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg text-sm"
+                  >
+                    <i class="fas fa-cog mr-3"></i>
+                    <span class="font-medium">Setting</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+
+            <!-- Logout Button - Fixed to bottom -->
+            <div class="mt-auto p-3 border-t border-gray-200">
+              <a
+                href="#"
+                class="flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm"
+              >
+                <i class="fas fa-sign-out-alt mr-3"></i>
+                <span class="font-medium">Logout</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <!-- Main Content Area -->
+          <main class="flex-1 overflow-y-auto p-4 md:p-6">
+            <!-- Konten Utama -->
+            <div class="flex flex-col lg:flex-row gap-6">
+              <!-- Kolom Kiri: Peta -->
+              <div class="w-full lg:w-2/3">
+                <!-- Peta Indonesia -->
+                <div class="bg-white rounded-xl card-shadow p-6 mb-6">
+                  <h2 class="text-lg font-semibold mb-4">
+                    Peta Indonesia - Titik Pacitan
+                  </h2>
+                  <div class="map-container" id="indonesiaMap"></div>
+                  <div class="text-center mt-4">
+                    <button
+                      class="bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center justify-center mx-auto"
+                    >
+                      <i class="fas fa-search mr-2"></i>Telusuri Potensi
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Peta Zoom Pacitan -->
+                <div class="bg-white rounded-xl card-shadow p-6">
+                  <h2 class="text-lg font-semibold mb-4">
+                    Peta Detail Pacitan
+                  </h2>
+                  <div class="map-container" id="pacitanMap"></div>
+
+                  <!-- SIMPLE HORIZONTAL LEGEND -->
+                  <div class="simple-legend">
+                    <div class="legend-item-horizontal">
+                      <div
+                        class="legend-color"
+                        style="background-color: #3b82f6"
+                      ></div>
+                      <span class="legend-text">Pemerintahan</span>
+                    </div>
+                    <div class="legend-item-horizontal">
+                      <div
+                        class="legend-color"
+                        style="background-color: #10b981"
+                      ></div>
+                      <span class="legend-text">Wisata</span>
+                    </div>
+                    <div class="legend-item-horizontal">
+                      <div
+                        class="legend-color"
+                        style="background-color: #f59e0b"
+                      ></div>
+                      <span class="legend-text">Ekonomi</span>
+                    </div>
+                    <div class="legend-item-horizontal">
+                      <div
+                        class="legend-color"
+                        style="background-color: #8b5cf6"
+                      ></div>
+                      <span class="legend-text">UMKM</span>
+                    </div>
+                    <div class="legend-item-horizontal">
+                      <div
+                        class="legend-color"
+                        style="background-color: #ef4444"
+                      ></div>
+                      <span class="legend-text">Pertanian</span>
+                    </div>
+                  </div>
+
+                  <div class="text-center mt-4">
+                    <button
+                      class="bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center justify-center mx-auto"
+                    >
+                      <i class="fas fa-search mr-2"></i>Telusuri Potensi
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Kolom Kanan: Berita, Pie Chart, dan Ketinggian -->
+              <div class="w-full lg:w-1/3">
+                <!-- Berita dan Pie Chart -->
+                <div class="bg-white rounded-xl card-shadow p-6 mb-6">
+                  <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold">
+                      Berita Terkini & Demografi
+                    </h2>
+                    <a
+                      href="#"
+                      class="text-primary hover:text-blue-800 text-sm font-medium"
+                    >
+                      Lihat Semua
+                    </a>
+                  </div>
+
+                  <!-- Berita Terkini -->
+                  <div class="mb-6">
+                    <h3
+                      class="text-md font-semibold mb-3 pb-2 border-b border-gray-200"
+                    >
+                      Berita Terkini
+                    </h3>
+                    <div class="space-y-4">
+                      <div class="flex items-start">
+                        <img
+                          src="Festival-Ronthek-2024.jpg"
+                          alt="Berita 1"
+                          class="news-image mr-4"
+                        />
+                        <div class="flex-1">
+                          <h4 class="font-semibold text-sm">
+                            Festival Rontek Pacitan
+                          </h4>
+                          <p class="text-gray-500 text-xs flex items-center">
+                            <i class="far fa-clock mr-1"></i>2 jam yang lalu
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-start">
+                        <img
+                          src="Pantai-Klayar.jpg"
+                          alt="Berita 2"
+                          class="news-image mr-4"
+                        />
+                        <div class="flex-1">
+                          <h4 class="font-semibold text-sm">
+                            Kondisi Pantai Klayar Terkini
+                          </h4>
+                          <p class="text-gray-500 text-xs flex items-center">
+                            <i class="far fa-clock mr-1"></i>1 hari yang lalu
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-start">
+                        <img
+                          src="Pantai-Buyutan.jpg"
+                          alt="Berita 3"
+                          class="news-image mr-4"
+                        />
+                        <div class="flex-1">
+                          <h4 class="font-semibold text-sm">
+                            Indahnya Pantai Buyutan
+                          </h4>
+                          <p class="text-gray-500 text-xs flex items-center">
+                            <i class="far fa-clock mr-1"></i>3 hari yang lalu
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Pie Chart -->
+                  <div>
+                    <h3
+                      class="text-md font-semibold mb-3 pb-2 border-b border-gray-200"
+                    >
+                      Demografi Penduduk
+                    </h3>
+                    <div class="h-64">
+                      <canvas id="genderChart"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Diagram Ketinggian -->
+                <div class="bg-white rounded-xl card-shadow p-6">
+                  <h2 class="text-lg font-semibold mb-4">
+                    Ketinggian Daerah di Pacitan
+                  </h2>
+                  <div class="h-64 mb-4">
+                    <canvas id="elevationChart"></canvas>
+                  </div>
+
+                  <h3
+                    class="text-md font-semibold mb-3 pb-2 border-b border-gray-200"
+                  >
+                    Daftar Daerah
+                  </h3>
+                  <div class="region-list">
+                    <div
+                      class="flex justify-between items-center py-2 border-b border-gray-100"
+                    >
+                      <span class="text-sm">Kecamatan Pacitan</span>
+                      <span
+                        class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                        >150 mdpl</span
+                      >
+                    </div>
+                    <div
+                      class="flex justify-between items-center py-2 border-b border-gray-100"
+                    >
+                      <span class="text-sm">Kecamatan Kebonagung</span>
+                      <span
+                        class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
+                        >200 mdpl</span
+                      >
+                    </div>
+                    <div
+                      class="flex justify-between items-center py-2 border-b border-gray-100"
+                    >
+                      <span class="text-sm">Kecamatan Pringkuku</span>
+                      <span
+                        class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                        >175 mdpl</span
+                      >
+                    </div>
+                    <div
+                      class="flex justify-between items-center py-2 border-b border-gray-100"
+                    >
+                      <span class="text-sm">Kecamatan Punung</span>
+                      <span
+                        class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded"
+                        >250 mdpl</span
+                      >
+                    </div>
+                    <div
+                      class="flex justify-between items-center py-2 border-b border-gray-100"
+                    >
+                      <span class="text-sm">Kecamatan Donorojo</span>
+                      <span
+                        class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded"
+                        >300 mdpl</span
+                      >
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                      <span class="text-sm">Kecamatan Tulakan</span>
+                      <span
+                        class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded"
+                        >180 mdpl</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+      // Mobile menu functionality
+      const mobileMenuButton = document.getElementById("mobileMenuButton");
+      const mobileSidebar = document.getElementById("mobileSidebar");
+      const overlay = document.getElementById("overlay");
+
+      function toggleMobileMenu() {
+        mobileSidebar.classList.toggle("open");
+        overlay.classList.toggle("active");
+      }
+
+      mobileMenuButton.addEventListener("click", toggleMobileMenu);
+      overlay.addEventListener("click", toggleMobileMenu);
+
+      // Close menu when clicking on a link
+      const mobileLinks = document.querySelectorAll("#mobileSidebar a");
+      mobileLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          mobileSidebar.classList.remove("open");
+          overlay.classList.remove("active");
+        });
+      });
+
+      // Initialize charts when the page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        // Gender Pie Chart
+        const genderCtx = document
+          .getElementById("genderChart")
+          .getContext("2d");
+        const genderChart = new Chart(genderCtx, {
+          type: "pie",
+          data: {
+            labels: ["Laki-laki", "Perempuan"],
+            datasets: [
+              {
+                data: [297035, 297036],
+                backgroundColor: ["#2c5aa0", "#ff6b8b"],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    const label = context.label || "";
+                    const value = context.parsed;
+                    const total = context.dataset.data.reduce(
+                      (a, b) => a + b,
+                      0
+                    );
+                    const percentage = Math.round((value / total) * 100);
+                    return `${label}: ${value.toLocaleString(
+                      "id-ID"
+                    )} (${percentage}%)`;
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        // Elevation Chart - Line chart
+        const elevationCtx = document
+          .getElementById("elevationChart")
+          .getContext("2d");
+        const elevationChart = new Chart(elevationCtx, {
+          type: "line",
+          data: {
+            labels: [
+              "Pacitan",
+              "Kebonagung",
+              "Pringkuku",
+              "Punung",
+              "Donorojo",
+              "Tulakan",
+            ],
+            datasets: [
+              {
+                label: "Ketinggian (mdpl)",
+                data: [150, 200, 175, 250, 300, 180],
+                backgroundColor: "rgba(76, 175, 80, 0.2)",
+                borderColor: "#4caf50",
+                borderWidth: 3,
+                pointBackgroundColor: "#4caf50",
+                pointBorderColor: "#ffffff",
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                fill: true,
+                tension: 0.4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: "Ketinggian (mdpl)",
+                },
+                grid: {
+                  drawBorder: false,
+                },
+              },
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+
+        // Initialize Indonesia Map
+        const indonesiaMap = L.map("indonesiaMap", {
+          zoomControl: true,
+          attributionControl: true,
+        }).setView([-2.5, 118], 5);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(indonesiaMap);
+
+        // Add marker for Pacitan on Indonesia map
+        const pacitanMarker = L.marker([-8.206, 111.087]).addTo(indonesiaMap);
+        pacitanMarker
+          .bindPopup("<b>Pacitan</b><br>Kabupaten di Jawa Timur")
+          .openPopup();
+
+        // Initialize Pacitan Detail Map
+        const pacitanMap = L.map("pacitanMap", {
+          zoomControl: true,
+          attributionControl: true,
+        }).setView([-8.206, 111.087], 12);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(pacitanMap);
+
+        // Different colors for different types
+        const locationColors = {
+          Pemerintahan: "#3b82f6", // blue
+          Wisata: "#10b981", // green
+          Ekonomi: "#f59e0b", // yellow
+          UMKM: "#8b5cf6", // purple
+          Pertanian: "#ef4444", // red
+        };
+
+        // Create custom pin icons
+        const createCustomIcon = (color) => {
+          return L.divIcon({
+            className: "custom-pin",
+            html: `<div style="color: ${color};" class="pin-icon"><i class="fas fa-map-marker-alt"></i></div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 24],
+            popupAnchor: [0, -24],
+          });
+        };
+
+        // Enhanced sample locations with more detailed information
+        const sampleLocations = [
+          {
+            lat: -8.206,
+            lng: 111.087,
+            name: "Kantor Bupati Pacitan",
+            type: "Pemerintahan",
+            address: "Jl. Letjen Suprapto No. 1, Pacitan",
+            phone: "(0357) 881123",
+            hours: "Senin-Jumat: 08:00-16:00",
+            description:
+              "Pusat pemerintahan Kabupaten Pacitan yang melayani berbagai kebutuhan administrasi masyarakat.",
+          },
+          {
+            lat: -8.215,
+            lng: 111.095,
+            name: "Pantai Teleng Ria",
+            type: "Wisata",
+            address: "Jl. Pantai Teleng Ria, Pacitan",
+            phone: "-",
+            hours: "24 Jam",
+            description:
+              "Pantai dengan pasir putih dan pemandangan sunset yang indah. Fasilitas lengkap dengan area kuliner.",
+          },
+          {
+            lat: -8.201,
+            lng: 111.092,
+            name: "Pasar Pacitan",
+            type: "Ekonomi",
+            address: "Jl. Pasar No. 15, Pacitan",
+            phone: "-",
+            hours: "06:00-18:00",
+            description:
+              "Pasar tradisional terbesar di Pacitan yang menjual berbagai kebutuhan sehari-hari dan produk lokal.",
+          },
+          {
+            lat: -8.198,
+            lng: 111.102,
+            name: "Sentra Batik Jleng",
+            type: "UMKM",
+            address: "Jl. Batik Jleng No. 8, Pacitan",
+            phone: "(0357) 882456",
+            hours: "08:00-17:00",
+            description:
+              "Sentra produksi batik khas Pacitan dengan motif tradisional yang unik dan berkualitas.",
+          },
+          {
+            lat: -8.21,
+            lng: 111.085,
+            name: "Perkebunan Kelapa Rakyat",
+            type: "Pertanian",
+            address: "Desa Sukorejo, Pacitan",
+            phone: "-",
+            hours: "-",
+            description:
+              "Area perkebunan kelapa rakyat yang menjadi sumber mata pencaharian masyarakat sekitar.",
+          },
+        ];
+
+        // Create custom popup content
+        const createPopupContent = (location) => {
+          return `
+            <div class="custom-popup">
+              <div class="popup-header">
+                <div class="popup-title">${location.name}</div>
+                <div class="popup-badge">${location.type}</div>
+              </div>
+              <div class="popup-content">
+                <div class="popup-info">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span>${location.address}</span>
+                </div>
+                <div class="popup-info">
+                  <i class="fas fa-phone"></i>
+                  <span>${location.phone}</span>
+                </div>
+                <div class="popup-info">
+                  <i class="fas fa-clock"></i>
+                  <span>${location.hours}</span>
+                </div>
+                <div class="popup-description">
+                  ${location.description}
+                </div>
+                <div class="popup-actions">
+                  <button class="popup-btn popup-btn-primary">
+                    <i class="fas fa-info-circle mr-1"></i>Detail
+                  </button>
+                  <button class="popup-btn popup-btn-secondary">
+                    <i class="fas fa-route mr-1"></i>Rute
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        };
+
+        // Add custom pin markers with enhanced popups
+        sampleLocations.forEach((location) => {
+          const customIcon = createCustomIcon(locationColors[location.type]);
+
+          const marker = L.marker([location.lat, location.lng], {
+            icon: customIcon,
+          }).addTo(pacitanMap);
+
+          marker.bindPopup(createPopupContent(location));
+        });
+
+        // Force refresh of map controls to ensure they're visible
+        setTimeout(() => {
+          indonesiaMap.invalidateSize();
+          pacitanMap.invalidateSize();
+        }, 100);
+
+        // Additional fix: Re-invalidate size after a short delay to ensure everything loads
+        setTimeout(() => {
+          indonesiaMap.invalidateSize();
+          pacitanMap.invalidateSize();
+        }, 500);
+      });
+    </script>
+  </body>
+</html>
